@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      N8N_BASE_URL: ${N8N_BASE_URL:-http://localhost:5678}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      DATABASE_URL: ${DATABASE_URL:-sqlite:///./autopilot.db}
+    volumes:
+      - db-data:/app/data
+
+volumes:
+  db-data:
