@@ -2,102 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+
+import { motion } from "framer-motion";
 
 import { getRecipe, runAutomation } from "@/lib/api";
-import type { Execution, Field, Recipe } from "@/lib/types";
+import type { Field, Recipe } from "@/lib/types";
 
 function fieldInputClassName() {
   return "mt-2 w-full rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm text-black outline-none transition focus:border-black/30 dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:border-white/30";
-}
-
-function renderExecutionResult(execution: Execution) {
-  const { result } = execution;
-
-  if (result.type === "dashboard") {
-    return (
-      <div className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-3">
-          {result.stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-2xl border border-black/10 bg-white/80 p-4 dark:border-white/10 dark:bg-white/5"
-            >
-              <p className="text-xs uppercase tracking-[0.2em] text-black/45 dark:text-white/45">
-                {stat.label}
-              </p>
-              <p className="mt-2 text-2xl font-semibold">{stat.value}</p>
-            </div>
-          ))}
-        </div>
-        <div className="space-y-3">
-          {result.items.map((item) => (
-            <div
-              key={item.title}
-              className="rounded-2xl border border-black/10 bg-white/80 p-4 dark:border-white/10 dark:bg-white/5"
-            >
-              <p className="text-sm font-semibold">{item.title}</p>
-              <p className="mt-1 text-xs uppercase tracking-[0.2em] text-black/45 dark:text-white/45">
-                Prioridad {item.priority}
-              </p>
-              <p className="mt-2 text-sm text-black/65 dark:text-white/65">{item.reason}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (result.type === "report") {
-    return (
-      <div className="space-y-4">
-        <div className="rounded-2xl border border-black/10 bg-white/80 p-5 dark:border-white/10 dark:bg-white/5">
-          <p className="text-xs uppercase tracking-[0.2em] text-black/45 dark:text-white/45">
-            Score
-          </p>
-          <p className="mt-2 text-4xl font-semibold">{result.score}</p>
-          <p className="mt-3 text-sm text-black/65 dark:text-white/65">{result.headline}</p>
-        </div>
-        {result.sections.map((section) => (
-          <div
-            key={section.title}
-            className="rounded-2xl border border-black/10 bg-white/80 p-5 dark:border-white/10 dark:bg-white/5"
-          >
-            <h3 className="text-lg font-semibold">{section.title}</h3>
-            <p className="mt-2 text-sm leading-6 text-black/65 dark:text-white/65">
-              {section.content}
-            </p>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (result.type === "social-posts") {
-    return (
-      <div className="grid gap-4 lg:grid-cols-2">
-        {result.posts.map((post, index) => (
-          <div
-            key={`${post.text}-${index + 1}`}
-            className="rounded-2xl border border-black/10 bg-white/80 p-5 dark:border-white/10 dark:bg-white/5"
-          >
-            <p className="text-xs uppercase tracking-[0.2em] text-black/45 dark:text-white/45">
-              Post {index + 1}
-            </p>
-            <p className="mt-3 text-sm leading-6 text-black/75 dark:text-white/75">{post.text}</p>
-            <p className="mt-4 text-xs text-black/50 dark:text-white/50">
-              {post.hashtags.join(" ")}
-            </p>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-2xl border border-black/10 bg-white/80 p-5 text-sm leading-7 text-black/75 dark:border-white/10 dark:bg-white/5 dark:text-white/75">
-      {result.content}
-    </div>
-  );
 }
 
 type DynamicFormProps = {
@@ -105,12 +18,12 @@ type DynamicFormProps = {
 };
 
 export function DynamicForm({ recipeId }: DynamicFormProps) {
+  const router = useRouter();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [execution, setExecution] = useState<Execution | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -188,7 +101,7 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
       }, {});
 
       const response = await runAutomation(recipe.id, payload);
-      setExecution(response);
+      router.push(`/results/${response.executionId}`);
     } catch (submitError) {
       setError(
         submitError instanceof Error ? submitError.message : "No se pudo ejecutar la automatizacion."
@@ -255,7 +168,12 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
   }
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(320px,0.8fr)]">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="grid gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(320px,0.8fr)]"
+    >
       <section className="rounded-[2rem] border border-black/10 bg-white/80 p-8 shadow-panel dark:border-white/10 dark:bg-white/5">
         <Link href="/catalog" className="text-sm text-black/55 transition hover:text-black dark:text-white/55 dark:hover:text-white">
           ← Volver al catalogo
@@ -299,20 +217,38 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
           Resultado
         </p>
         <div className="mt-5">
-          {execution ? (
-            <div className="space-y-4">
-              <div className="rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
-                Automatizacion completada. Execution ID: {execution.executionId}
+          {submitting ? (
+            <div className="space-y-5">
+              <div className="rounded-2xl border border-dev/20 bg-dev/10 px-4 py-3 text-sm text-dev">
+                Preparando la automatizacion y conectando con AI...
               </div>
-              {renderExecutionResult(execution)}
+              <div className="space-y-3">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <motion.div
+                    key={`loading-line-${index + 1}`}
+                    initial={{ opacity: 0.4, scaleX: 0.35 }}
+                    animate={{ opacity: 1, scaleX: 1 }}
+                    transition={{ duration: 0.9, delay: index * 0.08, repeat: Infinity, repeatType: "reverse" }}
+                    className="h-2 origin-left rounded-full bg-gradient-to-r from-dev via-life to-biz"
+                  />
+                ))}
+              </div>
+              <div className="grid gap-3">
+                {Array.from({ length: 2 }).map((_, index) => (
+                  <div
+                    key={`skeleton-panel-${index + 1}`}
+                    className="h-24 animate-pulse rounded-2xl border border-black/10 bg-white/70 dark:border-white/10 dark:bg-white/5"
+                  />
+                ))}
+              </div>
             </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-black/15 px-5 py-10 text-sm leading-7 text-black/55 dark:border-white/15 dark:text-white/55">
-              Cuando ejecutes esta receta, aqui aparecera el resultado mock del backend.
+              Ejecuta la receta y te llevare directamente a una pantalla de resultados dedicada con historial persistido.
             </div>
           )}
         </div>
       </aside>
-    </div>
+    </motion.div>
   );
 }

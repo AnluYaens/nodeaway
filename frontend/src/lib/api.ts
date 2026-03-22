@@ -38,3 +38,7 @@ export function runAutomation(id: string, data: Record<string, unknown>): Promis
 export function getHistory(): Promise<Execution[]> {
   return request<Execution[]>("/api/history");
 }
+
+export function getExecution(executionId: string): Promise<Execution> {
+  return request<Execution>(`/api/history/${executionId}`);
+}

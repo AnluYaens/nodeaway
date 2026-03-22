@@ -100,6 +100,7 @@ async def list_history(limit: int = 25) -> list[dict[str, Any]]:
 
     history: list[dict[str, Any]] = []
     for row in rows:
+        result = json.loads(row["result_data"])
         history.append(
             {
                 "executionId": row["execution_id"],
@@ -107,9 +108,40 @@ async def list_history(limit: int = 25) -> list[dict[str, Any]]:
                 "recipeTitle": row["recipe_title"],
                 "status": row["status"],
                 "input": json.loads(row["input_data"]),
-                "result": json.loads(row["result_data"]),
+                "result": result,
                 "createdAt": row["created_at"],
+                "mode": result.get("mode"),
             }
         )
 
     return history
+
+
+async def get_execution(execution_id: str) -> dict[str, Any] | None:
+    async with aiosqlite.connect(DATABASE_PATH) as database:
+        database.row_factory = aiosqlite.Row
+        cursor = await database.execute(
+            """
+            SELECT execution_id, recipe_id, recipe_title, status, input_data, result_data, created_at
+            FROM executions
+            WHERE execution_id = ?
+            """,
+            (execution_id,),
+        )
+        row = await cursor.fetchone()
+
+    if row is None:
+        return None
+
+    result = json.loads(row["result_data"])
+
+    return {
+        "executionId": row["execution_id"],
+        "recipeId": row["recipe_id"],
+        "recipeTitle": row["recipe_title"],
+        "status": row["status"],
+        "input": json.loads(row["input_data"]),
+        "result": result,
+        "createdAt": row["created_at"],
+        "mode": result.get("mode"),
+    }

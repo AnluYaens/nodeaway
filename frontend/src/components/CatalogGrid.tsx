@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { motion } from "framer-motion";
+
 import { getRecipes } from "@/lib/api";
 import type { Recipe } from "@/lib/types";
 
@@ -52,7 +54,12 @@ export function CatalogGrid() {
   }, [activeCategory, recipes]);
 
   return (
-    <section className="space-y-8">
+    <motion.section
+      initial={{ opacity: 0, y: 22 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="space-y-8"
+    >
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm uppercase tracking-[0.24em] text-black/50 dark:text-white/50">
@@ -83,12 +90,33 @@ export function CatalogGrid() {
       ) : null}
 
       {!loading && !error ? (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <motion.div
+          initial="hidden"
+          animate="show"
+          variants={{
+            hidden: {},
+            show: {
+              transition: {
+                staggerChildren: 0.06
+              }
+            }
+          }}
+          className="grid gap-6 md:grid-cols-2 xl:grid-cols-3"
+        >
           {filteredRecipes.map((recipe) => (
-            <AutomationCard key={recipe.id} recipe={recipe} />
+            <motion.div
+              key={recipe.id}
+              variants={{
+                hidden: { opacity: 0, y: 18 },
+                show: { opacity: 1, y: 0 }
+              }}
+              transition={{ duration: 0.28 }}
+            >
+              <AutomationCard recipe={recipe} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       ) : null}
-    </section>
+    </motion.section>
   );
 }

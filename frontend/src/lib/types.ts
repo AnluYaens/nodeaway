@@ -34,28 +34,40 @@ export type Recipe = {
 export type DashboardResult = {
   type: "dashboard";
   summary: string;
-  stats: Array<{ label: string; value: string }>;
+  stats: Array<{ label: string; value: string; trend?: string }>;
   items: Array<{ title: string; priority: string; reason: string }>;
   context?: Record<string, unknown>;
+  mode?: string;
 };
 
 export type ReportResult = {
   type: "report";
   headline: string;
   score: number;
-  sections: Array<{ title: string; content: string }>;
+  sections: Array<{ title: string; content: string; score?: number }>;
+  recommendations?: string[];
   context?: Record<string, unknown>;
+  mode?: string;
 };
 
 export type SocialPostResult = {
   type: "social-posts";
-  posts: Array<{ text: string; hashtags: string[]; imagePrompt: string }>;
+  posts: Array<{
+    platform: string;
+    brandName: string;
+    text: string;
+    hashtags: string[];
+    imagePrompt: string;
+    imageBase64?: string | null;
+  }>;
+  mode?: string;
 };
 
 export type TextResult = {
   type: "text";
   content: string;
   context?: Record<string, unknown>;
+  mode?: string;
 };
 
 export type Result = DashboardResult | ReportResult | SocialPostResult | TextResult;
@@ -68,4 +80,5 @@ export type Execution = {
   input: Record<string, unknown>;
   result: Result;
   createdAt: string;
+  mode?: "live" | "mock" | "fallback";
 };
