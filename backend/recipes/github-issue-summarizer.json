@@ -1,0 +1,31 @@
+{
+  "id": "github-issue-summarizer",
+  "title": "GitHub issue summarizer",
+  "description": "Resume y prioriza los issues abiertos de un repositorio publico para decidir que atacar primero.",
+  "category": "dev",
+  "icon": "github",
+  "estimatedTime": "12s",
+  "integrations": ["GitHub", "AI"],
+  "popular": true,
+  "n8nWebhookPath": "/webhook/github-issue-summarizer",
+  "fields": [
+    {
+      "id": "repoUrl",
+      "label": "URL del repositorio publico",
+      "type": "url",
+      "placeholder": "https://github.com/owner/repo",
+      "required": true
+    },
+    {
+      "id": "email",
+      "label": "Email para enviarte el resumen",
+      "type": "email",
+      "placeholder": "equipo@empresa.com",
+      "required": true
+    }
+  ],
+  "resultTemplate": {
+    "type": "dashboard",
+    "features": ["metrics", "priority-list", "copy-summary"]
+  }
+}

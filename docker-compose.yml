@@ -19,7 +19,7 @@ services:
     environment:
       N8N_BASE_URL: ${N8N_BASE_URL:-http://localhost:5678}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      DATABASE_URL: ${DATABASE_URL:-sqlite:///./autopilot.db}
+      DATABASE_URL: ${DATABASE_URL:-sqlite:///./data/autopilot.db}
     volumes:
       - db-data:/app/data
 
