@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import { motion } from "framer-motion";
 
+import { useToast } from "@/components/providers/AppProviders";
+
 type PostPreviewProps = {
   brandName: string;
   platform: string;
@@ -19,12 +21,31 @@ function downloadImage(imageBase64: string, platform: string) {
   link.click();
 }
 
+function ClipboardIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[1.8]">
+      <path d="M9 4.75h6M9.75 3h4.5A1.75 1.75 0 0 1 16 4.75v.5H8v-.5A1.75 1.75 0 0 1 9.75 3Z" />
+      <path d="M8 5.25H6.75A1.75 1.75 0 0 0 5 7v11.25C5 19.22 5.78 20 6.75 20h10.5c.97 0 1.75-.78 1.75-1.75V7c0-.97-.78-1.75-1.75-1.75H16" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[2]">
+      <path d="m5 12.5 4.2 4.2L19 7.5" />
+    </svg>
+  );
+}
+
 export function PostPreview({ brandName, platform, text, hashtags, imageBase64 }: PostPreviewProps) {
   const [copied, setCopied] = useState(false);
+  const { showToast } = useToast();
 
   async function handleCopy() {
     await navigator.clipboard.writeText([text, hashtags.join(" ")].filter(Boolean).join("\n\n"));
     setCopied(true);
+    showToast("Copiado al portapapeles");
     window.setTimeout(() => setCopied(false), 1800);
   }
 
@@ -81,13 +102,19 @@ export function PostPreview({ brandName, platform, text, hashtags, imageBase64 }
           <button
             type="button"
             onClick={() => void handleCopy()}
-            className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 dark:bg-white dark:text-black"
+            className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 dark:bg-white dark:text-black"
           >
+            {copied ? <CheckIcon /> : <ClipboardIcon />}
             {copied ? "Copiado" : "Copiar texto"}
           </button>
           <button
             type="button"
-            onClick={() => imageBase64 && downloadImage(imageBase64, platform)}
+            onClick={() => {
+              if (imageBase64) {
+                downloadImage(imageBase64, platform);
+                showToast("Imagen descargada");
+              }
+            }}
             disabled={!imageBase64}
             className="rounded-full border border-black/10 px-4 py-2 text-sm font-medium text-black/70 transition hover:border-black/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:text-white/70 dark:hover:border-white/20"
           >

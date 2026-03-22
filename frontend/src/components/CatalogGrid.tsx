@@ -62,12 +62,16 @@ export function CatalogGrid() {
     >
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm uppercase tracking-[0.24em] text-black/50 dark:text-white/50">
+          <p className="text-sm uppercase tracking-[0.28em] text-black/50 dark:text-white/50">
             Catalogo visual
           </p>
-          <h1 className="mt-3 font-display text-5xl leading-none sm:text-6xl">
-            Elige la automatizacion y ejecutala sin workflow.
+          <h1 className="mt-3 max-w-4xl font-display text-5xl leading-[0.94] sm:text-6xl lg:text-7xl">
+            Automatizaciones listas para usar, sin nodos ni friccion.
           </h1>
+          <p className="mt-5 max-w-2xl text-sm leading-7 text-black/62 dark:text-white/62">
+            Nodeaway convierte flujos complejos en experiencias simples: eliges una receta,
+            completas unos pocos campos y recibes el resultado listo.
+          </p>
         </div>
         <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
       </div>

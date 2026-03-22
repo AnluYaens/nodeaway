@@ -1,5 +1,6 @@
 "use client";
 
+import { categoryMeta } from "@/lib/category";
 import type { RecipeCategory } from "@/lib/types";
 
 export type CategoryValue = "all" | RecipeCategory;
@@ -21,6 +22,10 @@ export function CategoryFilter({ active, onChange }: CategoryFilterProps) {
     <div className="flex flex-wrap gap-3">
       {filters.map((filter) => {
         const isActive = filter.value === active;
+        const activeClassName =
+          filter.value === "all"
+            ? "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black"
+            : `${categoryMeta[filter.value].softClassName} shadow-none`;
         return (
           <button
             key={filter.value}
@@ -28,7 +33,7 @@ export function CategoryFilter({ active, onChange }: CategoryFilterProps) {
             onClick={() => onChange(filter.value)}
             className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
               isActive
-                ? "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black"
+                ? activeClassName
                 : "border-black/10 bg-white/75 text-black/70 hover:border-black/20 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:border-white/20"
             }`}
           >

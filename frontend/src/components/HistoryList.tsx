@@ -56,10 +56,24 @@ export function HistoryList() {
   if (history.length === 0) {
     return (
       <div className="rounded-[2rem] border border-dashed border-black/15 bg-white/75 p-10 text-center shadow-panel dark:border-white/15 dark:bg-white/5">
-        <p className="font-display text-4xl">Aun no hay ejecuciones</p>
+        <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-[2rem] bg-[radial-gradient(circle_at_top,rgba(127,119,221,0.24),transparent_48%),linear-gradient(135deg,rgba(255,255,255,0.92),rgba(247,243,236,0.84))] shadow-panel dark:bg-[radial-gradient(circle_at_top,rgba(127,119,221,0.22),transparent_48%),linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))]">
+          <div className="grid grid-cols-2 gap-2">
+            <span className="h-3 w-3 rounded-full bg-dev" />
+            <span className="h-3 w-3 rounded-full bg-life" />
+            <span className="h-3 w-3 rounded-full bg-biz" />
+            <span className="h-3 w-3 rounded-full bg-black/15 dark:bg-white/20" />
+          </div>
+        </div>
+        <p className="font-display text-4xl">Aún no has ejecutado ninguna automatización</p>
         <p className="mt-4 text-sm leading-7 text-black/60 dark:text-white/60">
           Cuando lances una automatizacion, el historial aparecera aqui con acceso rapido a sus resultados.
         </p>
+        <Link
+          href="/catalog"
+          className="mt-6 inline-flex rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 dark:bg-white dark:text-black"
+        >
+          Explorar catálogo
+        </Link>
       </div>
     );
   }

@@ -1,24 +1,41 @@
 import type { Metadata } from "next";
-import { DM_Sans, Instrument_Serif } from "next/font/google";
+import { DM_Serif_Display, Plus_Jakarta_Sans } from "next/font/google";
 import type { ReactNode } from "react";
 
+import { Footer } from "@/components/Footer";
+import { Navbar } from "@/components/Navbar";
+import { AppProviders } from "@/components/providers/AppProviders";
 import "@/styles/globals.css";
 
-const bodyFont = DM_Sans({
+const bodyFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-body"
 });
 
-const displayFont = Instrument_Serif({
+const displayFont = DM_Serif_Display({
   subsets: ["latin"],
   weight: "400",
-  style: "italic",
   variable: "--font-display"
 });
 
 export const metadata: Metadata = {
-  title: "AutoPilot",
-  description: "Automatizaciones listas para usar. Elige, configura, ejecuta."
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  title: "Nodeaway — Automatizaciones sin workflow",
+  description: "Elige. Configura. Ejecuta. Automatizaciones listas para usar sin flujos visibles.",
+  icons: {
+    icon: "/icon.svg"
+  },
+  openGraph: {
+    title: "Nodeaway — Automatizaciones sin workflow",
+    description: "Catalogo visual de automatizaciones con formularios simples y resultados listos para usar.",
+    images: ["/og-image.svg"]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Nodeaway — Automatizaciones sin workflow",
+    description: "Catalogo visual de automatizaciones con formularios simples y resultados listos para usar.",
+    images: ["/og-image.svg"]
+  }
 };
 
 type RootLayoutProps = {
@@ -31,9 +48,15 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body
         className={`${bodyFont.variable} ${displayFont.variable} bg-paper text-ink antialiased dark:bg-night dark:text-white`}
       >
-        <div className="min-h-screen">
-          {children}
-        </div>
+        <AppProviders>
+          <div className="min-h-screen">
+            <Navbar />
+            <div className="relative">
+              {children}
+            </div>
+            <Footer />
+          </div>
+        </AppProviders>
       </body>
     </html>
   );

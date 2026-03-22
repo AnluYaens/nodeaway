@@ -1,16 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
 import { motion } from "framer-motion";
 
+import { categoryMeta } from "@/lib/category";
 import { getRecipe, runAutomation } from "@/lib/api";
 import type { Field, Recipe } from "@/lib/types";
 
 function fieldInputClassName() {
-  return "mt-2 w-full rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm text-black outline-none transition focus:border-black/30 dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:border-white/30";
+  return "mt-2 w-full rounded-2xl border border-[color:var(--accent-soft)] bg-white/80 px-4 py-3 text-sm text-black outline-none transition focus:border-[color:var(--accent-color)] dark:border-[color:var(--accent-soft)] dark:bg-white/5 dark:text-white";
 }
 
 type DynamicFormProps = {
@@ -24,6 +25,12 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [progressStep, setProgressStep] = useState(0);
+  const loadingMessages = [
+    "Preparando automatizacion...",
+    "Procesando datos...",
+    "Generando resultados..."
+  ];
 
   useEffect(() => {
     let cancelled = false;
@@ -57,6 +64,21 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
       cancelled = true;
     };
   }, [recipeId]);
+
+  useEffect(() => {
+    if (!submitting) {
+      setProgressStep(0);
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setProgressStep((current) => (current + 1) % loadingMessages.length);
+    }, 1200);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [submitting]);
 
   const missingFields = useMemo(() => {
     if (!recipe) {
@@ -167,6 +189,9 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
     return null;
   }
 
+  const category = categoryMeta[recipe.category];
+  const progressWidths = ["34%", "68%", "92%"];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -174,15 +199,27 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
       transition={{ duration: 0.35 }}
       className="grid gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(320px,0.8fr)]"
     >
-      <section className="rounded-[2rem] border border-black/10 bg-white/80 p-8 shadow-panel dark:border-white/10 dark:bg-white/5">
+      <section
+        className="relative overflow-hidden rounded-[2rem] border border-black/10 bg-white/82 p-8 shadow-panel dark:border-white/10 dark:bg-white/5"
+        style={
+          {
+            "--accent-color": category.color,
+            "--accent-soft": `${category.color}44`
+          } as CSSProperties
+        }
+      >
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-1"
+          style={{ background: `linear-gradient(90deg, ${category.color}, transparent 78%)` }}
+        />
         <Link href="/catalog" className="text-sm text-black/55 transition hover:text-black dark:text-white/55 dark:hover:text-white">
           ← Volver al catalogo
         </Link>
         <div className="mt-6">
-          <p className="text-sm uppercase tracking-[0.24em] text-black/45 dark:text-white/45">
-            {recipe.category}
-          </p>
-          <h1 className="mt-3 font-display text-5xl leading-none">{recipe.title}</h1>
+          <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] ${category.softClassName}`}>
+            {category.label}
+          </span>
+          <h1 className="mt-4 font-display text-5xl leading-none sm:text-6xl">{recipe.title}</h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-black/65 dark:text-white/65">
             {recipe.description}
           </p>
@@ -192,7 +229,9 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
           {recipe.fields.map((field) => (
             <label key={field.id} htmlFor={field.id} className="block">
               <span className="text-sm font-semibold">{field.label}</span>
-              {renderField(field)}
+              <div className="[&_input]:border-black/10 [&_select]:border-black/10 [&_textarea]:border-black/10">
+                {renderField(field)}
+              </div>
             </label>
           ))}
 
@@ -205,7 +244,7 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-black"
+            className={`inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${category.buttonClassName}`}
           >
             {submitting ? "Ejecutando automatizacion..." : "Ejecutar automatizacion →"}
           </button>
@@ -219,19 +258,25 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
         <div className="mt-5">
           {submitting ? (
             <div className="space-y-5">
-              <div className="rounded-2xl border border-dev/20 bg-dev/10 px-4 py-3 text-sm text-dev">
-                Preparando la automatizacion y conectando con AI...
+              <div className={`rounded-2xl border px-4 py-3 text-sm ${category.softClassName}`}>
+                {loadingMessages[progressStep]}
               </div>
               <div className="space-y-3">
-                {Array.from({ length: 3 }).map((_, index) => (
+                <div className="h-2 overflow-hidden rounded-full bg-black/6 dark:bg-white/10">
                   <motion.div
-                    key={`loading-line-${index + 1}`}
-                    initial={{ opacity: 0.4, scaleX: 0.35 }}
-                    animate={{ opacity: 1, scaleX: 1 }}
-                    transition={{ duration: 0.9, delay: index * 0.08, repeat: Infinity, repeatType: "reverse" }}
-                    className="h-2 origin-left rounded-full bg-gradient-to-r from-dev via-life to-biz"
+                    key={progressStep}
+                    initial={{ width: "18%" }}
+                    animate={{ width: progressWidths[progressStep] }}
+                    transition={{ duration: 0.65, ease: "easeInOut" }}
+                    className="h-full rounded-full"
+                    style={{
+                      background: `linear-gradient(90deg, ${category.color}, rgba(255,255,255,0.8))`
+                    }}
                   />
-                ))}
+                </div>
+                <p className="text-sm text-black/55 dark:text-white/55">
+                  {loadingMessages[progressStep]}
+                </p>
               </div>
               <div className="grid gap-3">
                 {Array.from({ length: 2 }).map((_, index) => (

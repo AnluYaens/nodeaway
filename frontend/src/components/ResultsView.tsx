@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import { motion } from "framer-motion";
 
+import { useToast } from "@/components/providers/AppProviders";
+import { categoryMeta, recipeCategoryById } from "@/lib/category";
 import { getExecution } from "@/lib/api";
 import type { Execution } from "@/lib/types";
 
@@ -34,11 +36,29 @@ function LoadingState() {
   );
 }
 
+function ClipboardIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[1.8]">
+      <path d="M9 4.75h6M9.75 3h4.5A1.75 1.75 0 0 1 16 4.75v.5H8v-.5A1.75 1.75 0 0 1 9.75 3Z" />
+      <path d="M8 5.25H6.75A1.75 1.75 0 0 0 5 7v11.25C5 19.22 5.78 20 6.75 20h10.5c.97 0 1.75-.78 1.75-1.75V7c0-.97-.78-1.75-1.75-1.75H16" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[2]">
+      <path d="m5 12.5 4.2 4.2L19 7.5" />
+    </svg>
+  );
+}
+
 export function ResultsView({ executionId }: ResultsViewProps) {
   const [execution, setExecution] = useState<Execution | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     let cancelled = false;
@@ -82,6 +102,7 @@ export function ResultsView({ executionId }: ResultsViewProps) {
   async function copyText(value: string) {
     await navigator.clipboard.writeText(value);
     setCopied(true);
+    showToast("Copiado al portapapeles");
     window.setTimeout(() => setCopied(false), 1800);
   }
 
@@ -96,6 +117,8 @@ export function ResultsView({ executionId }: ResultsViewProps) {
       </div>
     );
   }
+
+  const category = categoryMeta[recipeCategoryById[execution.recipeId] || "biz"];
 
   return (
     <motion.div
@@ -140,12 +163,22 @@ export function ResultsView({ executionId }: ResultsViewProps) {
 
       {execution.result.type === "dashboard" ? (
         <section className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-3">
+          <motion.div
+            initial="hidden"
+            animate="show"
+            variants={{
+              hidden: {},
+              show: { transition: { staggerChildren: 0.06 } }
+            }}
+            className="grid gap-4 md:grid-cols-3"
+          >
             {execution.result.stats.map((stat) => (
               <motion.div
                 key={stat.label}
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
+                variants={{
+                  hidden: { opacity: 0, y: 18 },
+                  show: { opacity: 1, y: 0 }
+                }}
                 transition={{ duration: 0.28 }}
                 className="rounded-[1.5rem] border border-black/10 bg-white/80 p-5 shadow-panel dark:border-white/10 dark:bg-white/5"
               >
@@ -156,25 +189,37 @@ export function ResultsView({ executionId }: ResultsViewProps) {
                 <p className="mt-2 text-sm text-black/55 dark:text-white/55">{stat.trend || "sin cambio"}</p>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
           <div className="rounded-[1.75rem] border border-black/10 bg-white/80 p-6 shadow-panel dark:border-white/10 dark:bg-white/5">
             <p className="text-sm leading-7 text-black/70 dark:text-white/70">{execution.result.summary}</p>
-            <div className="mt-6 space-y-4">
+            <motion.div
+              initial="hidden"
+              animate="show"
+              variants={{
+                hidden: {},
+                show: { transition: { staggerChildren: 0.05 } }
+              }}
+              className="mt-6 space-y-4"
+            >
               {execution.result.items.map((item) => (
-                <div
+                <motion.div
                   key={item.title}
+                  variants={{
+                    hidden: { opacity: 0, y: 14 },
+                    show: { opacity: 1, y: 0 }
+                  }}
                   className="rounded-[1.25rem] border border-black/10 p-4 dark:border-white/10"
                 >
                   <div className="flex items-center justify-between gap-4">
                     <p className="text-base font-semibold">{item.title}</p>
-                    <span className="rounded-full bg-dev/10 px-3 py-1 text-xs font-medium text-dev">
+                    <span className={`rounded-full px-3 py-1 text-xs font-medium ${category.softClassName}`}>
                       {item.priority}
                     </span>
                   </div>
                   <p className="mt-3 text-sm leading-6 text-black/65 dark:text-white/65">{item.reason}</p>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </section>
       ) : null}
@@ -229,8 +274,9 @@ export function ResultsView({ executionId }: ResultsViewProps) {
             <button
               type="button"
               onClick={() => void copyText(textResult.content)}
-              className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-black"
+              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium ${category.buttonClassName}`}
             >
+              {copied ? <CheckIcon /> : <ClipboardIcon />}
               {copied ? "Copiado" : "Copiar"}
             </button>
           </div>
@@ -246,7 +292,7 @@ export function ResultsView({ executionId }: ResultsViewProps) {
       <div className="flex flex-wrap gap-3">
         <Link
           href={`/run/${execution.recipeId}`}
-          className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 dark:bg-white dark:text-black"
+          className={`rounded-full px-5 py-3 text-sm font-semibold transition ${category.buttonClassName}`}
         >
           Ejecutar de nuevo
         </Link>
