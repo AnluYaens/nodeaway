@@ -1,13 +1,13 @@
 {
-  "id": "github-issue-summarizer",
-  "title": "Resumidor de Issues de GitHub",
-  "description": "Descarga los últimos issues de un repositorio y los categoriza por urgencia con AI.",
+  "id": "github-health-auditor",
+  "title": "Auditor de Salud de GitHub",
+  "description": "Analiza la deuda técnica, actividad y salud general de un repositorio público.",
   "category": "dev",
   "icon": "github",
-  "estimatedTime": "12s",
+  "estimatedTime": "10s",
   "integrations": ["GitHub", "AI"],
-  "popular": true,
-  "n8nWebhookPath": "/webhook/github-issue-summarizer",
+  "popular": false,
+  "n8nWebhookPath": "/webhook/github-health-auditor",
   "fields": [
     {
       "id": "repo",
@@ -25,6 +25,6 @@
   ],
   "resultTemplate": {
     "type": "dashboard",
-    "features": ["triage", "priority-list", "metrics"]
+    "features": ["health-metrics", "technical-debt", "priority-list"]
   }
 }

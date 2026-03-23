@@ -1,0 +1,29 @@
+{
+  "id": "reddit-opinion-radar",
+  "title": "Radar de Opiniones (Reddit)",
+  "description": "Analiza lo que la gente realmente opina sobre un tema o producto en Reddit: pros, contras y sentimiento.",
+  "category": "biz",
+  "icon": "reddit",
+  "estimatedTime": "12s",
+  "integrations": ["Reddit", "AI"],
+  "popular": true,
+  "n8nWebhookPath": "/webhook/reddit-opinion-radar",
+  "fields": [
+    {
+      "id": "topic",
+      "label": "Tema o producto a investigar",
+      "type": "text",
+      "required": true
+    },
+    {
+      "id": "subreddits",
+      "label": "Subreddits específicos (opcional)",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "resultTemplate": {
+    "type": "report",
+    "features": ["sentiment", "pros-cons", "recommendations"]
+  }
+}

@@ -1,7 +1,7 @@
 {
   "id": "social-post-generator",
-  "title": "Social post generator",
-  "description": "Genera posts para redes sociales con texto e imagen AI adaptados a tu marca.",
+  "title": "Product Social Post Generator",
+  "description": "Genera 3 posts perfectos para Instagram, Twitter/X y LinkedIn a partir de tu producto.",
   "category": "biz",
   "icon": "sparkles",
   "estimatedTime": "8s",
@@ -10,17 +10,9 @@
   "n8nWebhookPath": "/webhook/social-post-generator",
   "fields": [
     {
-      "id": "brand",
-      "label": "Describe tu marca",
+      "id": "product",
+      "label": "Describe tu producto",
       "type": "textarea",
-      "placeholder": "Cafeteria artesanal en Madrid con enfoque sostenible...",
-      "required": true
-    },
-    {
-      "id": "platform",
-      "label": "Plataforma",
-      "type": "select",
-      "options": ["Instagram", "Twitter/X", "LinkedIn", "Todas"],
       "required": true
     },
     {
@@ -29,20 +21,10 @@
       "type": "select",
       "options": ["Profesional", "Casual", "Divertido", "Inspirador"],
       "required": true
-    },
-    {
-      "id": "count",
-      "label": "Cantidad de posts",
-      "type": "number",
-      "placeholder": "5",
-      "required": false,
-      "min": 1,
-      "max": 10,
-      "default": 5
     }
   ],
   "resultTemplate": {
     "type": "social-posts",
-    "features": ["copy-text", "download-image", "download-zip", "regenerate"]
+    "features": ["platform-copies", "image-prompts", "ready-to-publish"]
   }
 }

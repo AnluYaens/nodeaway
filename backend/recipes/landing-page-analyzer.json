@@ -1,0 +1,30 @@
+{
+  "id": "landing-page-analyzer",
+  "title": "Landing Page Analyzer",
+  "description": "Analiza cualquier landing page: copy, estructura, CTA, propuesta de valor, y da un score con recomendaciones.",
+  "category": "biz",
+  "icon": "globe",
+  "estimatedTime": "10s",
+  "integrations": ["Web scraping", "AI"],
+  "popular": false,
+  "n8nWebhookPath": "/webhook/landing-page-analyzer",
+  "fields": [
+    {
+      "id": "url",
+      "label": "URL de la landing page",
+      "type": "text",
+      "placeholder": "https://example.com",
+      "required": true
+    },
+    {
+      "id": "competitor",
+      "label": "¿Con quién compites? (opcional)",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "resultTemplate": {
+    "type": "report",
+    "features": ["score", "cta-review", "recommendations"]
+  }
+}
