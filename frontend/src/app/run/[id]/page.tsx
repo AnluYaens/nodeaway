@@ -1,5 +1,7 @@
 import { DynamicForm } from "@/components/DynamicForm";
 
+export const dynamic = "force-dynamic";
+
 type RunPageProps = {
   params: {
     id: string;

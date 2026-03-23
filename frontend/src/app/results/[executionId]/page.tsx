@@ -1,5 +1,7 @@
 import { ResultsView } from "@/components/ResultsView";
 
+export const dynamic = "force-dynamic";
+
 type ResultsPageProps = {
   params: {
     executionId: string;
