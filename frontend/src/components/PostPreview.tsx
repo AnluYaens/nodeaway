@@ -11,6 +11,7 @@ type PostPreviewProps = {
   platform: string;
   text: string;
   hashtags: string[];
+  imagePrompt: string;
   imageBase64?: string | null;
 };
 
@@ -38,7 +39,7 @@ function CheckIcon() {
   );
 }
 
-export function PostPreview({ brandName, platform, text, hashtags, imageBase64 }: PostPreviewProps) {
+export function PostPreview({ brandName, platform, text, hashtags, imagePrompt, imageBase64 }: PostPreviewProps) {
   const [copied, setCopied] = useState(false);
   const { showToast } = useToast();
 
@@ -90,6 +91,14 @@ export function PostPreview({ brandName, platform, text, hashtags, imageBase64 }
           <p className="text-sm leading-7 text-black/78 dark:text-white/78">{text}</p>
           {hashtags.length > 0 ? (
             <p className="mt-3 text-xs text-black/50 dark:text-white/50">{hashtags.join(" ")}</p>
+          ) : null}
+          {imagePrompt ? (
+            <div className="mt-4 rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
+              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-black/45 dark:text-white/45">
+                Prompt visual
+              </p>
+              <p className="mt-2 text-xs leading-6 text-black/60 dark:text-white/60">{imagePrompt}</p>
+            </div>
           ) : null}
         </div>
 

@@ -13,10 +13,14 @@ export function AutomationCard({ recipe }: AutomationCardProps) {
   const category = categoryMeta[recipe.category as RecipeCategory];
 
   return (
-    <motion.div whileHover={{ scale: 1.02, y: -4 }} transition={{ duration: 0.18, ease: "easeOut" }}>
+    <motion.div
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.18, ease: "easeOut" }}
+      className="h-full"
+    >
       <Link
-      href={`/run/${recipe.id}`}
-      className={`group flex h-full flex-col overflow-hidden rounded-[1.9rem] border border-black/10 bg-white/82 p-6 shadow-panel transition duration-200 hover:border-black/18 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20 ${category.glowClassName}`}
+        href={`/run/${recipe.id}`}
+        className={`group relative isolate flex h-full min-h-[29rem] flex-col overflow-hidden rounded-[1.9rem] border border-black/10 bg-white/82 p-6 shadow-panel transition duration-200 hover:-translate-y-0.5 hover:border-black/18 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20 ${category.glowClassName}`}
       >
         <div
           className="pointer-events-none absolute inset-x-0 top-0 h-1 rounded-t-[1.9rem]"
@@ -37,14 +41,16 @@ export function AutomationCard({ recipe }: AutomationCardProps) {
           ) : null}
         </div>
 
-        <div className="mt-5">
-          <h3 className="text-[1.85rem] font-semibold tracking-tight">{recipe.title}</h3>
+        <div className="mt-5 flex min-h-[12.5rem] flex-col">
+          <h3 className="text-[1.85rem] font-semibold tracking-tight [text-wrap:balance]">
+            {recipe.title}
+          </h3>
           <p className="mt-3 text-sm leading-6 text-black/65 dark:text-white/65">
             {recipe.description}
           </p>
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="mt-6 flex min-h-[3.25rem] flex-wrap content-start gap-2">
           {recipe.integrations.map((integration) => (
             <span
               key={integration}
@@ -55,12 +61,15 @@ export function AutomationCard({ recipe }: AutomationCardProps) {
           ))}
         </div>
 
-        <div className="mt-auto flex items-end justify-between gap-4 pt-8">
+        <div className="mt-auto flex items-end justify-between gap-4 border-t border-black/8 pt-6 dark:border-white/8">
           <div className="text-sm font-medium text-black/55 dark:text-white/55">
             Tiempo estimado: {recipe.estimatedTime}
           </div>
-          <div className="text-xs uppercase tracking-[0.22em] text-black/35 transition group-hover:text-black/55 dark:text-white/35 dark:group-hover:text-white/55">
-            Abrir
+          <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-black/40 transition group-hover:gap-3 group-hover:text-black dark:text-white/40 dark:group-hover:text-white">
+            <span>Abrir</span>
+            <span aria-hidden="true" className="text-sm transition group-hover:translate-x-0.5">
+              →
+            </span>
           </div>
         </div>
       </Link>

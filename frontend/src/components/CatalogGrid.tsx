@@ -29,7 +29,7 @@ export function CatalogGrid() {
         }
       } catch (loadError) {
         if (!cancelled) {
-          setError(loadError instanceof Error ? loadError.message : "No se pudo cargar el catalogo.");
+          setError(loadError instanceof Error ? loadError.message : "No se pudo cargar el catálogo.");
         }
       } finally {
         if (!cancelled) {
@@ -63,10 +63,10 @@ export function CatalogGrid() {
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm uppercase tracking-[0.28em] text-black/50 dark:text-white/50">
-            Catalogo visual
+            Catálogo visual
           </p>
           <h1 className="mt-3 max-w-4xl font-display text-5xl leading-[0.94] sm:text-6xl lg:text-7xl">
-            Automatizaciones listas para usar, sin nodos ni friccion.
+            Automatizaciones listas para usar, sin nodos ni fricción.
           </h1>
           <p className="mt-5 max-w-2xl text-sm leading-7 text-black/62 dark:text-white/62">
             Nodeaway convierte flujos complejos en experiencias simples: eliges una receta,
@@ -115,6 +115,7 @@ export function CatalogGrid() {
                 show: { opacity: 1, y: 0 }
               }}
               transition={{ duration: 0.28 }}
+              className="h-full"
             >
               <AutomationCard recipe={recipe} />
             </motion.div>

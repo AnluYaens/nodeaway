@@ -113,7 +113,7 @@ export function ResultsView({ executionId }: ResultsViewProps) {
   if (error || !execution) {
     return (
       <div className="rounded-[2rem] border border-rose-300 bg-rose-50 p-8 text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
-        {error || "No se encontro esta ejecucion."}
+        {error || "No se encontró esta ejecución."}
       </div>
     );
   }
@@ -131,7 +131,7 @@ export function ResultsView({ executionId }: ResultsViewProps) {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-200">
-              Automatizacion completada con exito
+              Automatización completada con éxito
             </p>
             <h1 className="mt-2 font-display text-5xl leading-none text-emerald-950 dark:text-white">
               {execution.recipeTitle}
@@ -155,6 +155,7 @@ export function ResultsView({ executionId }: ResultsViewProps) {
               platform={post.platform}
               text={post.text}
               hashtags={post.hashtags}
+              imagePrompt={post.imagePrompt}
               imageBase64={post.imageBase64}
             />
           ))}
@@ -300,7 +301,7 @@ export function ResultsView({ executionId }: ResultsViewProps) {
           href="/catalog"
           className="rounded-full border border-black/10 px-5 py-3 text-sm font-semibold text-black/72 transition hover:border-black/20 dark:border-white/10 dark:text-white/72 dark:hover:border-white/20"
         >
-          Otra automatizacion
+          Otra automatización
         </Link>
       </div>
     </motion.div>

@@ -8,6 +8,41 @@ import { motion } from "framer-motion";
 import { getHistory } from "@/lib/api";
 import type { Execution } from "@/lib/types";
 
+function EmptyHistoryIllustration() {
+  return (
+    <svg viewBox="0 0 120 120" className="h-24 w-24" aria-hidden="true">
+      <defs>
+        <linearGradient id="history-ring" x1="20" x2="96" y1="18" y2="94" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#7F77DD" />
+          <stop offset="0.55" stopColor="#1D9E75" />
+          <stop offset="1" stopColor="#D85A30" />
+        </linearGradient>
+      </defs>
+      <circle cx="60" cy="60" r="38" fill="none" opacity="0.2" stroke="url(#history-ring)" strokeWidth="8" />
+      <circle cx="60" cy="60" r="26" fill="rgba(255,255,255,0.72)" stroke="rgba(22,22,22,0.08)" strokeWidth="2" />
+      <path
+        d="M60 45v16l11 7"
+        fill="none"
+        stroke="url(#history-ring)"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="6"
+      />
+      <path
+        d="M30 54H18m8-10-8 10 8 10"
+        fill="none"
+        opacity="0.72"
+        stroke="rgba(22,22,22,0.28)"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="4"
+      />
+      <circle cx="89" cy="34" r="7" fill="#D85A30" opacity="0.18" />
+      <circle cx="95" cy="80" r="5" fill="#1D9E75" opacity="0.22" />
+    </svg>
+  );
+}
+
 export function HistoryList() {
   const [history, setHistory] = useState<Execution[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,23 +91,19 @@ export function HistoryList() {
   if (history.length === 0) {
     return (
       <div className="rounded-[2rem] border border-dashed border-black/15 bg-white/75 p-10 text-center shadow-panel dark:border-white/15 dark:bg-white/5">
-        <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-[2rem] bg-[radial-gradient(circle_at_top,rgba(127,119,221,0.24),transparent_48%),linear-gradient(135deg,rgba(255,255,255,0.92),rgba(247,243,236,0.84))] shadow-panel dark:bg-[radial-gradient(circle_at_top,rgba(127,119,221,0.22),transparent_48%),linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))]">
-          <div className="grid grid-cols-2 gap-2">
-            <span className="h-3 w-3 rounded-full bg-dev" />
-            <span className="h-3 w-3 rounded-full bg-life" />
-            <span className="h-3 w-3 rounded-full bg-biz" />
-            <span className="h-3 w-3 rounded-full bg-black/15 dark:bg-white/20" />
-          </div>
+        <div className="mx-auto mb-6 flex h-28 w-28 items-center justify-center rounded-[2rem] bg-[radial-gradient(circle_at_top,rgba(127,119,221,0.24),transparent_48%),linear-gradient(135deg,rgba(255,255,255,0.92),rgba(247,243,236,0.84))] shadow-panel dark:bg-[radial-gradient(circle_at_top,rgba(127,119,221,0.22),transparent_48%),linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))]">
+          <EmptyHistoryIllustration />
         </div>
         <p className="font-display text-4xl">Aún no has ejecutado ninguna automatización</p>
         <p className="mt-4 text-sm leading-7 text-black/60 dark:text-white/60">
-          Cuando lances una automatizacion, el historial aparecera aqui con acceso rapido a sus resultados.
+          Cuando lances una automatización, verás aquí cada ejecución con acceso rápido a sus resultados.
         </p>
         <Link
           href="/catalog"
-          className="mt-6 inline-flex rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 dark:bg-white dark:text-black"
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:gap-3 hover:opacity-90 dark:bg-white dark:text-black"
         >
           Explorar catálogo
+          <span aria-hidden="true">→</span>
         </Link>
       </div>
     );

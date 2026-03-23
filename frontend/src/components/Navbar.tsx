@@ -25,7 +25,7 @@ function MoonIcon() {
 }
 
 const navLinks = [
-  { href: "/catalog", label: "Catalogo" },
+  { href: "/catalog", label: "Catálogo" },
   { href: "/history", label: "Historial" }
 ];
 
