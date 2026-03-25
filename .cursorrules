@@ -1,0 +1,42 @@
+# Nodeaway — Reglas para agentes de código
+
+## Qué es este proyecto
+Nodeaway: plataforma de automatizaciones sin workflow. El usuario elige, configura un formulario simple, y recibe resultados. n8n es el motor invisible en el backend.
+
+## Stack
+- Frontend: Next.js 14 (App Router), TypeScript, TailwindCSS, Framer Motion
+- Backend: FastAPI (Python 3.11+), SQLite, httpx
+- AI: Gemini 2.5 Flash (texto + imágenes) via google-generativeai
+- Motor: n8n self-hosted (comunicación via webhooks)
+
+## Reglas obligatorias
+1. Todo texto visible debe estar en español con tildes correctas (á, é, í, ó, ú, ñ)
+2. NO usar Inter, Roboto ni Arial — usar fuentes con personalidad (DM Serif Display, Plus Jakarta Sans, etc.)
+3. UX es la MÁXIMA prioridad — animaciones suaves, loading states elegantes, feedback visual claro
+4. Mobile-first: todo funciona en 375px mínimo
+5. Dark mode con toggle, detectar preferencia del sistema
+6. API keys desde .env, NUNCA hardcodeadas en código
+7. Formularios se generan dinámicamente desde los JSON en backend/recipes/
+8. Si falta GEMINI_API_KEY, devolver mock responses como fallback
+9. Colores por categoría: Dev=#7F77DD, Life=#1D9E75, Biz=#D85A30
+10. n8n es invisible para el usuario — nunca mostrar URLs de webhooks ni mencionar n8n en la UI
+
+## Estructura clave
+- backend/recipes/*.json → Definen cada automatización (campos, tipo de resultado, webhook path)
+- backend/routers/executions.py → Ejecuta automatizaciones (llama a n8n o Gemini directo)
+- frontend/src/components/DynamicForm.tsx → Genera formularios desde el JSON de recetas
+- frontend/src/components/ResultsView.tsx → Renderiza resultados según tipo (dashboard, report, social-posts, text)
+
+## Las 6 automatizaciones
+1. social-post-generator (biz) — Posts para redes con texto + imagen AI
+2. reddit-opinion-radar (biz) — Análisis de opiniones de Reddit
+3. github-health-auditor (dev) — Auditoría de salud de un repo
+4. github-issue-summarizer (dev) — Resumen de issues por urgencia
+5. rss-news-digest (life) — Boletín de noticias AI
+6. landing-page-analyzer (biz) — Análisis de landing pages
+
+## Antes de editar
+- Verificar que el código compila: `cd frontend && npm run build`
+- Verificar backend: `cd backend && python -m py_compile main.py`
+- NO romper funcionalidad existente al añadir features nuevas
+- Hacer commits frecuentes con mensajes descriptivos en español
