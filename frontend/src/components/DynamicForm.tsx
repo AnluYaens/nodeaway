@@ -11,7 +11,7 @@ import { getRecipe, runAutomation } from "@/lib/api";
 import type { Field, Recipe } from "@/lib/types";
 
 function fieldInputClassName() {
-  return "mt-2 w-full rounded-2xl border border-[color:var(--accent-soft)] bg-white/80 px-4 py-3 text-sm text-black outline-none transition focus:border-[color:var(--accent-color)] dark:border-[color:var(--accent-soft)] dark:bg-white/5 dark:text-white";
+  return "mt-2 w-full rounded-2xl border border-[color:var(--accent-soft)] bg-white/80 px-4 py-3 text-sm text-black outline-none transition-all duration-200 focus:border-[color:var(--accent-color)] focus:ring-2 focus:ring-[color:var(--accent-soft)] dark:border-[color:var(--accent-soft)] dark:bg-white/5 dark:text-white";
 }
 
 type DynamicFormProps = {
@@ -488,7 +488,7 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
           <button
             type="submit"
             disabled={submitting}
-            className={`inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${category.buttonClassName}`}
+            className={`inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60 ${category.buttonClassName}`}
           >
             {submitting ? "Ejecutando automatización..." : "Ejecutar automatización →"}
           </button>

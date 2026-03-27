@@ -13,27 +13,27 @@ export const categoryMeta: Record<
 > = {
   dev: {
     label: "Developers",
-    color: "#2563EB",
+    color: "#7F77DD",
     softClassName: "bg-dev/12 text-dev border-dev/20",
     borderClassName: "border-dev/25 focus:border-dev/60",
-    buttonClassName: "bg-dev text-white hover:bg-[#1d4ed8]",
-    glowClassName: "shadow-[0_20px_40px_rgba(37,99,235,0.22)]"
+    buttonClassName: "bg-dev text-white hover:bg-dev-600",
+    glowClassName: "shadow-[0_20px_40px_rgba(127,119,221,0.22)]"
   },
   life: {
     label: "Personal",
-    color: "#0F9F76",
+    color: "#1D9E75",
     softClassName: "bg-life/12 text-life border-life/20",
     borderClassName: "border-life/25 focus:border-life/60",
-    buttonClassName: "bg-life text-white hover:bg-[#0b7f5e]",
-    glowClassName: "shadow-[0_20px_40px_rgba(15,159,118,0.2)]"
+    buttonClassName: "bg-life text-white hover:bg-life-600",
+    glowClassName: "shadow-[0_20px_40px_rgba(29,158,117,0.20)]"
   },
   biz: {
     label: "Negocios",
-    color: "#D97706",
+    color: "#D85A30",
     softClassName: "bg-biz/12 text-biz border-biz/20",
     borderClassName: "border-biz/25 focus:border-biz/60",
-    buttonClassName: "bg-biz text-white hover:bg-[#b45309]",
-    glowClassName: "shadow-[0_20px_40px_rgba(217,119,6,0.22)]"
+    buttonClassName: "bg-biz text-white hover:bg-biz-600",
+    glowClassName: "shadow-[0_20px_40px_rgba(216,90,48,0.22)]"
   }
 };
 

@@ -35,7 +35,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 px-4 pt-4 sm:px-6 lg:px-10">
-      <div className="mx-auto max-w-7xl rounded-[1.5rem] border border-black/10 bg-white/78 px-4 py-3 shadow-panel backdrop-blur-xl dark:border-white/10 dark:bg-night/72">
+      <div className="mx-auto max-w-7xl rounded-[1.5rem] border border-black/10 bg-white/78 px-4 py-3 shadow-panel backdrop-blur-xl backdrop-saturate-[1.8] dark:border-white/10 dark:bg-night/72">
         <div className="flex items-center justify-between gap-4">
           <Link href="/catalog" className="flex items-center gap-3">
             <div className="relative flex h-11 w-11 items-center justify-center">
@@ -66,7 +66,7 @@ export function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`rounded-full px-3 py-2 text-xs font-medium transition sm:px-4 sm:text-sm ${
+                    className={`rounded-full px-3 py-2 text-xs font-medium transition-all duration-200 sm:px-4 sm:text-sm ${
                       active
                         ? "bg-black text-white dark:bg-white dark:text-black"
                         : "text-black/60 hover:bg-black/5 hover:text-black dark:text-white/60 dark:hover:bg-white/5 dark:hover:text-white"

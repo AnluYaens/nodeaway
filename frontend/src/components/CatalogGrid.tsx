@@ -81,8 +81,10 @@ export function CatalogGrid() {
           {Array.from({ length: 6 }).map((_, index) => (
             <div
               key={`skeleton-${index + 1}`}
-              className="h-72 animate-pulse rounded-[1.75rem] border border-black/10 bg-white/60 dark:border-white/10 dark:bg-white/5"
-            />
+              className="relative h-72 overflow-hidden rounded-[1.75rem] border border-black/10 bg-white/60 dark:border-white/10 dark:bg-white/5"
+            >
+              <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/40 to-transparent dark:via-white/5" />
+            </div>
           ))}
         </div>
       ) : null}

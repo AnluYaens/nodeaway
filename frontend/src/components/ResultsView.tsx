@@ -275,7 +275,7 @@ export function ResultsView({ executionId }: ResultsViewProps) {
             <button
               type="button"
               onClick={() => void copyText(textResult.content)}
-              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium ${category.buttonClassName}`}
+              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${category.buttonClassName}`}
             >
               {copied ? <CheckIcon /> : <ClipboardIcon />}
               {copied ? "Copiado" : "Copiar"}
@@ -293,7 +293,7 @@ export function ResultsView({ executionId }: ResultsViewProps) {
       <div className="flex flex-wrap gap-3">
         <Link
           href={`/run/${execution.recipeId}`}
-          className={`rounded-full px-5 py-3 text-sm font-semibold transition ${category.buttonClassName}`}
+          className={`rounded-full px-5 py-3 text-sm font-semibold transition-all duration-200 ${category.buttonClassName}`}
         >
           Ejecutar de nuevo
         </Link>

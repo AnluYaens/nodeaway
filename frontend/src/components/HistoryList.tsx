@@ -117,7 +117,7 @@ export function HistoryList() {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.28, delay: index * 0.04 }}
-          className="rounded-[1.75rem] border border-black/10 bg-white/80 p-5 shadow-panel dark:border-white/10 dark:bg-white/5"
+          className="rounded-[1.75rem] border border-black/10 bg-white/80 p-5 shadow-panel transition-all duration-200 hover:border-black/18 hover:shadow-panel-lg dark:border-white/10 dark:bg-white/5 dark:hover:border-white/18"
         >
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>

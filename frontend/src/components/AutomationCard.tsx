@@ -20,10 +20,10 @@ export function AutomationCard({ recipe }: AutomationCardProps) {
     >
       <Link
         href={`/run/${recipe.id}`}
-        className={`group relative isolate flex h-full min-h-[29rem] flex-col overflow-hidden rounded-[1.9rem] border border-black/10 bg-white/82 p-6 shadow-panel transition duration-200 hover:-translate-y-0.5 hover:border-black/18 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20 ${category.glowClassName}`}
+        className={`group relative isolate flex h-full min-h-[29rem] flex-col overflow-hidden rounded-[1.9rem] border border-black/10 bg-white/82 p-6 shadow-panel backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-black/18 hover:shadow-panel-lg dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20 ${category.glowClassName}`}
       >
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-1 rounded-t-[1.9rem]"
+          className="pointer-events-none absolute inset-x-0 top-0 h-1.5 rounded-t-[1.9rem]"
           style={{
             background: `linear-gradient(90deg, ${category.color}, transparent 78%)`
           }}
