@@ -4,6 +4,14 @@ node_modules/
 __pycache__/
 *.pyc
 .env
+.mcp.json
+.claude/mcp.json
 *.db
 .DS_Store
 frontend/.dev-server*.log
+.codex/config.toml
+.codex/mcp/
+.codex/scripts/
+.codex/rss-news-digest.json
+.codex/mcp/generated-images/
+backend/n8n-workflows/
