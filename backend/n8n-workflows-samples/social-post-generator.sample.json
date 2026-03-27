@@ -1,0 +1,18 @@
+{
+  "workflow": "social-post-generator",
+  "webhookPath": "/webhook/social-post-generator",
+  "expectedRequest": {
+    "product": "Plataforma SaaS para automatizar soporte al cliente",
+    "tone": "Profesional"
+  },
+  "expectedResponse": {
+    "posts": [
+      {
+        "platform": "Instagram",
+        "text": "Texto del post listo para publicar",
+        "imagePrompt": "Editorial product launch scene",
+        "imageBase64": null
+      }
+    ]
+  }
+}

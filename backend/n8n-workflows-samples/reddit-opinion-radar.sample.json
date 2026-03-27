@@ -1,0 +1,22 @@
+{
+  "workflow": "reddit-opinion-radar",
+  "webhookPath": "/webhook/reddit-opinion-radar",
+  "expectedRequest": {
+    "topic": "Notion AI",
+    "subreddits": "productivity,SaaS"
+  },
+  "expectedResponse": {
+    "headline": "Radar de opiniones para Notion AI",
+    "score": 74,
+    "pros": [
+      "Resumen de ventajas frecuentes"
+    ],
+    "cons": [
+      "Resumen de objeciones frecuentes"
+    ],
+    "summary": "Panorama general del sentimiento detectado",
+    "recommendations": [
+      "Acción sugerida para producto o marketing"
+    ]
+  }
+}

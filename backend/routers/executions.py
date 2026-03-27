@@ -15,6 +15,7 @@ from fastapi import APIRouter, HTTPException
 
 from models.database import get_execution, list_history, save_execution
 from services.gemini_client import gemini_is_configured, generate_image, generate_text
+from services.n8n_client import trigger_workflow
 from services.recipe_loader import get_recipe
 
 router = APIRouter(tags=["executions"])
@@ -713,14 +714,213 @@ async def _run_with_integrations(recipe_id: str, payload: dict[str, Any]) -> dic
     raise RuntimeError("Recipe integration not implemented.")
 
 
-async def _resolve_result(recipe: dict[str, Any], payload: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
+def _normalize_n8n_social_posts(result: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    raw_posts = result.get("posts", [])
+    brand_name = _extract_brand_name(str(payload.get("product", "")))
+    posts: list[dict[str, Any]] = []
+
+    if isinstance(raw_posts, list):
+        for entry in raw_posts:
+            if not isinstance(entry, dict):
+                continue
+            hashtags = entry.get("hashtags", [])
+            posts.append(
+                {
+                    "platform": str(entry.get("platform", "")).strip() or "Instagram",
+                    "brandName": str(entry.get("brandName", "")).strip() or brand_name,
+                    "text": str(entry.get("text", "")).strip(),
+                    "hashtags": [str(hashtag).strip() for hashtag in hashtags if str(hashtag).strip()] if isinstance(hashtags, list) else [],
+                    "imagePrompt": str(entry.get("imagePrompt", "")).strip(),
+                    "imageBase64": entry.get("imageBase64"),
+                }
+            )
+
+    return {"type": "social-posts", "posts": posts}
+
+
+def _normalize_n8n_reddit_report(result: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    pros = result.get("pros", [])
+    cons = result.get("cons", [])
+    summary = str(result.get("summary", "")).strip()
+    sentiment = str(result.get("sentiment", "mixed")).strip()
+
+    def _lines(value: Any) -> str:
+        if isinstance(value, list):
+            items = [str(item).strip() for item in value if str(item).strip()]
+            return "\n".join(f"- {item}" for item in items)
+        return str(value).strip()
+
+    return {
+        "type": "report",
+        "headline": str(result.get("headline", f"Radar de opiniones para {payload.get('topic', 'tu tema')}")).strip(),
+        "score": _safe_number(result.get("score"), 75),
+        "sections": [
+            {"title": "Pros recurrentes", "score": 80, "content": _lines(pros) or "Sin pros claros en la respuesta."},
+            {"title": "Contras recurrentes", "score": 65, "content": _lines(cons) or "Sin contras claros en la respuesta."},
+            {
+                "title": "Sentimiento general",
+                "score": _safe_number(result.get("score"), 72),
+                "content": summary or f"Sentimiento detectado: {sentiment}.",
+            },
+        ],
+        "recommendations": result.get("recommendations", []),
+    }
+
+
+def _normalize_n8n_github_health(result: dict[str, Any]) -> dict[str, Any]:
+    metrics = result.get("metrics", {}) if isinstance(result.get("metrics"), dict) else {}
+    recommendations = result.get("recommendations", [])
+    items = []
+    if isinstance(recommendations, list):
+        items = [
+            {"title": str(item).strip(), "priority": "Media", "reason": "Recomendación generada por el workflow."}
+            for item in recommendations
+            if str(item).strip()
+        ]
+
+    return {
+        "type": "dashboard",
+        "summary": str(result.get("summary", result.get("analysis", ""))).strip() or "Auditoría completada.",
+        "stats": [
+            {"label": "Score salud", "value": f"{_safe_number(result.get('score'), 0)}/100", "trend": "Evaluación generada por n8n"},
+            {"label": "Issues abiertos", "value": str(_safe_number(metrics.get("openIssues"), 0)), "trend": "Dato del repositorio"},
+            {"label": "Contribuidores", "value": str(_safe_number(metrics.get("contributorsCount"), 0)), "trend": "Top contributors analizados"},
+        ],
+        "items": items,
+    }
+
+
+def _normalize_n8n_issue_summary(result: dict[str, Any]) -> dict[str, Any]:
+    categories = result.get("categories", {}) if isinstance(result.get("categories"), dict) else {}
+    high_items = categories.get("high", []) if isinstance(categories.get("high"), list) else []
+    medium_items = categories.get("medium", []) if isinstance(categories.get("medium"), list) else []
+    low_items = categories.get("low", []) if isinstance(categories.get("low"), list) else []
+
+    items: list[dict[str, Any]] = []
+    for priority, entries in (("Alta", high_items), ("Media", medium_items), ("Baja", low_items)):
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            items.append(
+                {
+                    "title": str(entry.get("title", "")).strip() or f"Issue #{entry.get('number', '?')}",
+                    "priority": priority,
+                    "reason": str(entry.get("reason", "Priorizado por el workflow.")).strip(),
+                }
+            )
+
+    return {
+        "type": "dashboard",
+        "summary": str(result.get("summary", "")).strip() or "Resumen de issues generado por n8n.",
+        "stats": [
+            {"label": "Issues abiertos", "value": str(_safe_number(result.get("totalIssues"), len(items))), "trend": "Backlog analizado"},
+            {"label": "Urgencia alta", "value": str(len(high_items)), "trend": "Issues con mayor prioridad"},
+            {"label": "Sin etiquetar", "value": "0", "trend": "No informado por n8n"},
+        ],
+        "items": items,
+    }
+
+
+def _normalize_n8n_rss_digest(result: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "type": "text",
+        "content": str(result.get("content", result.get("digest", ""))).strip() or "Boletín generado por n8n.",
+        "context": {"sources": result.get("sources", []), "articlesFound": result.get("articlesFound")},
+    }
+
+
+def _normalize_n8n_landing_report(result: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    analysis = result.get("analysis", {}) if isinstance(result.get("analysis"), dict) else {}
+    sections = [
+        {"title": "Copy", "score": _safe_number(result.get("score"), 78), "content": str(analysis.get("copy", "")).strip()},
+        {"title": "Estructura y CTA", "score": _safe_number(result.get("score"), 78), "content": str(analysis.get("structure", "")).strip()},
+        {
+            "title": "Propuesta de valor",
+            "score": _safe_number(result.get("score"), 78),
+            "content": str(analysis.get("valueProposition", analysis.get("cta", ""))).strip(),
+        },
+    ]
+
+    return {
+        "type": "report",
+        "headline": str(result.get("headline", f"Análisis de landing page para {payload.get('url', 'la landing')}")).strip(),
+        "score": _safe_number(result.get("score"), 78),
+        "sections": sections,
+        "recommendations": result.get("recommendations", []),
+    }
+
+
+def _normalize_n8n_result(recipe_id: str, result: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    result_type = result.get("type")
+    if result_type in {"dashboard", "social-posts", "report", "text"}:
+        return result
+
+    if recipe_id == "social-post-generator":
+        return _normalize_n8n_social_posts(result, payload)
+    if recipe_id == "reddit-opinion-radar":
+        return _normalize_n8n_reddit_report(result, payload)
+    if recipe_id == "github-health-auditor":
+        return _normalize_n8n_github_health(result)
+    if recipe_id == "github-issue-summarizer":
+        return _normalize_n8n_issue_summary(result)
+    if recipe_id == "rss-news-digest":
+        return _normalize_n8n_rss_digest(result)
+    if recipe_id == "landing-page-analyzer":
+        return _normalize_n8n_landing_report(result, payload)
+
+    return result
+
+
+async def _resolve_direct_result(
+    recipe: dict[str, Any],
+    payload: dict[str, Any],
+    upstream_error: Exception | None = None,
+) -> tuple[dict[str, Any], str]:
     if not gemini_is_configured():
-        return _build_mock_result(recipe, payload, reason="GEMINI_API_KEY no configurada."), "mock"
+        reason = "GEMINI_API_KEY no configurada."
+        if upstream_error is not None:
+            reason = f"n8n: {upstream_error}; {reason}"
+        return _build_mock_result(recipe, payload, reason=reason), "mock"
 
     try:
-        return await _run_with_integrations(recipe["id"], payload), None
+        return await _run_with_integrations(recipe["id"], payload), "fallback"
     except Exception as error:
-        return _build_mock_result(recipe, payload, reason=str(error)), "fallback"
+        reason = str(error)
+        if upstream_error is not None:
+            reason = f"n8n: {upstream_error}; integración directa: {error}"
+        return _build_mock_result(recipe, payload, reason=reason), "mock"
+
+
+async def _resolve_result(recipe: dict[str, Any], payload: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
+    webhook_path = str(recipe.get("n8nWebhookPath", "")).strip()
+    if webhook_path:
+        try:
+            live_result = await trigger_workflow(webhook_path, payload)
+            return _normalize_n8n_result(recipe["id"], live_result, payload), "live"
+        except Exception as error:
+            return await _resolve_direct_result(recipe, payload, upstream_error=error)
+
+    return await _resolve_direct_result(
+        recipe,
+        payload,
+        upstream_error=RuntimeError("n8nWebhookPath no configurado para la receta."),
+    )
+
+
+def _is_sensitive_input_key(key: str) -> bool:
+    normalized = key.lower().replace("-", "").replace("_", "")
+    markers = ("token", "apikey", "secret", "password", "authorization", "bearer")
+    return any(marker in normalized for marker in markers)
+
+
+def _redact_sensitive_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    sanitized: dict[str, Any] = {}
+    for key, value in payload.items():
+        if _is_sensitive_input_key(key) and str(value).strip():
+            sanitized[key] = "[REDACTED]"
+        else:
+            sanitized[key] = value
+    return sanitized
 
 
 @router.post("/run/{recipe_id}")
@@ -730,6 +930,7 @@ async def run_automation(recipe_id: str, payload: dict[str, Any]) -> dict[str, A
         raise HTTPException(status_code=404, detail="Recipe not found")
 
     validated_payload = validate_payload(recipe, payload)
+    sanitized_payload = _redact_sensitive_payload(validated_payload)
     execution_id = str(uuid4())
     created_at = datetime.now(UTC).isoformat()
     result, mode = await _resolve_result(recipe, validated_payload)
@@ -739,10 +940,10 @@ async def run_automation(recipe_id: str, payload: dict[str, Any]) -> dict[str, A
         "recipeId": recipe["id"],
         "recipeTitle": recipe["title"],
         "status": "success",
-        "input": validated_payload,
+        "input": sanitized_payload,
         "result": result,
         "createdAt": created_at,
-        "mode": mode or "live",
+        "mode": mode,
     }
 
     await save_execution(
@@ -750,8 +951,8 @@ async def run_automation(recipe_id: str, payload: dict[str, Any]) -> dict[str, A
         recipe_id=recipe["id"],
         recipe_title=recipe["title"],
         status="success",
-        input_data=validated_payload,
-        result_data={**result, "mode": mode or "live"},
+        input_data=sanitized_payload,
+        result_data={**result, "mode": mode},
         created_at=created_at,
     )
 

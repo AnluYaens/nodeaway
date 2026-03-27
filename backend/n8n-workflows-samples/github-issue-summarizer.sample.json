@@ -1,0 +1,23 @@
+{
+  "workflow": "github-issue-summarizer",
+  "webhookPath": "/webhook/github-issue-summarizer",
+  "expectedRequest": {
+    "repo": "https://github.com/owner/repo",
+    "token": "[optional]"
+  },
+  "expectedResponse": {
+    "totalIssues": 18,
+    "categories": {
+      "high": [
+        {
+          "number": 101,
+          "title": "Issue prioritario",
+          "reason": "Motivo de urgencia"
+        }
+      ],
+      "medium": [],
+      "low": []
+    },
+    "summary": "Resumen operativo del backlog"
+  }
+}

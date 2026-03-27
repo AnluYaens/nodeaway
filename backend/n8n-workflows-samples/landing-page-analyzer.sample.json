@@ -1,0 +1,21 @@
+{
+  "workflow": "landing-page-analyzer",
+  "webhookPath": "/webhook/landing-page-analyzer",
+  "expectedRequest": {
+    "url": "https://example.com",
+    "competitor": "https://competitor.com"
+  },
+  "expectedResponse": {
+    "url": "https://example.com",
+    "score": 78,
+    "analysis": {
+      "copy": "Hallazgos sobre el copy",
+      "structure": "Hallazgos sobre la estructura",
+      "cta": "Hallazgos sobre CTA",
+      "valueProposition": "Hallazgos sobre propuesta de valor"
+    },
+    "recommendations": [
+      "Recomendación prioritaria"
+    ]
+  }
+}

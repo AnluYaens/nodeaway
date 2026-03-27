@@ -19,7 +19,7 @@
     {
       "id": "token",
       "label": "GitHub Token (opcional, solo repos privados)",
-      "type": "text",
+      "type": "password",
       "required": false
     }
   ],

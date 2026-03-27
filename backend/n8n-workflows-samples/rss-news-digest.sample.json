@@ -1,0 +1,20 @@
+{
+  "workflow": "rss-news-digest",
+  "webhookPath": "/webhook/rss-news-digest",
+  "expectedRequest": {
+    "topics": "IA, Startups",
+    "language": "Español"
+  },
+  "expectedResponse": {
+    "topic": "IA, Startups",
+    "articlesFound": 12,
+    "digest": "Resumen editorial de las noticias encontradas",
+    "sources": [
+      {
+        "title": "Titular de ejemplo",
+        "source": "Fuente",
+        "url": "https://example.com/article"
+      }
+    ]
+  }
+}

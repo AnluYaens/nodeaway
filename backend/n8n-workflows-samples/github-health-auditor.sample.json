@@ -1,0 +1,19 @@
+{
+  "workflow": "github-health-auditor",
+  "webhookPath": "/webhook/github-health-auditor",
+  "expectedRequest": {
+    "repo": "https://github.com/owner/repo",
+    "token": "[optional]"
+  },
+  "expectedResponse": {
+    "score": 82,
+    "metrics": {
+      "openIssues": 14,
+      "contributorsCount": 6
+    },
+    "analysis": "Resumen de salud del repositorio",
+    "recommendations": [
+      "Siguiente acción prioritaria"
+    ]
+  }
+}
