@@ -44,7 +44,7 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" className="dark" suppressHydrationWarning>
       <body
         className={`${bodyFont.variable} ${displayFont.variable} bg-paper text-ink antialiased dark:bg-night dark:text-white`}
       >

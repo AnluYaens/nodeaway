@@ -67,10 +67,39 @@ module.exports = {
         shimmer: {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(100%)" }
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0) scale(1)" },
+          "50%": { transform: "translateY(-14px) scale(1.03)" }
+        },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "0.45", transform: "scale(1)" },
+          "50%": { opacity: "0.85", transform: "scale(1.08)" }
+        },
+        "gradient-shift": {
+          "0%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" }
+        },
+        "hero-orb": {
+          "0%, 100%": { transform: "translate(0,0) scale(1)", opacity: "0.5" },
+          "33%": { transform: "translate(30px,-20px) scale(1.15)", opacity: "0.7" },
+          "66%": { transform: "translate(-20px,15px) scale(0.92)", opacity: "0.55" }
+        },
+        "count-up": {
+          from: { opacity: "0", transform: "translateY(12px)" },
+          to: { opacity: "1", transform: "translateY(0)" }
         }
       },
       animation: {
-        shimmer: "shimmer 1.8s ease-in-out infinite"
+        shimmer: "shimmer 1.8s ease-in-out infinite",
+        float: "float 6s ease-in-out infinite",
+        "float-slow": "float 9s ease-in-out infinite",
+        "pulse-glow": "pulse-glow 3s ease-in-out infinite",
+        "gradient-shift": "gradient-shift 6s ease infinite",
+        "hero-orb": "hero-orb 8s ease-in-out infinite",
+        "hero-orb-slow": "hero-orb 12s ease-in-out infinite",
+        "count-up": "count-up 0.5s ease-out forwards"
       }
     }
   },

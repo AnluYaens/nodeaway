@@ -34,13 +34,12 @@ function applyTheme(theme: ThemeMode) {
 }
 
 export function AppProviders({ children }: PropsWithChildren) {
-  const [theme, setTheme] = useState<ThemeMode>("light");
+  const [theme, setTheme] = useState<ThemeMode>("dark");
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   useEffect(() => {
     const storedTheme = window.localStorage.getItem("nodeaway-theme") as ThemeMode | null;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initialTheme = storedTheme || (prefersDark ? "dark" : "light");
+    const initialTheme = storedTheme || "dark";
     setTheme(initialTheme);
     applyTheme(initialTheme);
   }, []);
