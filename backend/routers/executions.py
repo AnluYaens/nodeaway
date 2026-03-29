@@ -876,19 +876,21 @@ async def _resolve_direct_result(
     payload: dict[str, Any],
     upstream_error: Exception | None = None,
 ) -> tuple[dict[str, Any], str]:
+    is_real_n8n_error = upstream_error is not None and "n8nWebhookPath no configurado" not in str(upstream_error)
+    
     if not gemini_is_configured():
-        reason = "GEMINI_API_KEY no configurada."
-        if upstream_error is not None:
-            reason = f"n8n: {upstream_error}; {reason}"
-        return _build_mock_result(recipe, payload, reason=reason), "mock"
+        if is_real_n8n_error:
+            raise HTTPException(status_code=400, detail=f"Error de ejecución en n8n: {upstream_error}")
+        return _build_mock_result(recipe, payload, reason="Sin integraciones configuradas"), "mock"
 
     try:
         return await _run_with_integrations(recipe["id"], payload), "fallback"
     except Exception as error:
-        reason = str(error)
-        if upstream_error is not None:
-            reason = f"n8n: {upstream_error}; integración directa: {error}"
-        return _build_mock_result(recipe, payload, reason=reason), "mock"
+        if isinstance(error, HTTPException):
+            raise
+        if is_real_n8n_error:
+            raise HTTPException(status_code=400, detail=f"Error en n8n ({upstream_error}) y en integración local ({error})")
+        raise HTTPException(status_code=400, detail=f"Error en la ejecución: {error}")
 
 
 async def _resolve_result(recipe: dict[str, Any], payload: dict[str, Any]) -> tuple[dict[str, Any], str | None]:

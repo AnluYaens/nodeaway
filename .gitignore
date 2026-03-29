@@ -15,3 +15,6 @@ frontend/.dev-server*.log
 .codex/rss-news-digest.json
 .codex/mcp/generated-images/
 backend/n8n-workflows/
+backend/__pycache__/
+backend/data/
+backend/venv/

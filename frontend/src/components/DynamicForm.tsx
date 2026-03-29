@@ -200,15 +200,15 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
       const dashboardStats =
         recipe.id === "github-health-auditor"
           ? [
-              ["Score salud", "82/100"],
-              ["Issues abiertos", "14"],
-              ["Commits recientes", "9"]
-            ]
+            ["Score salud", "82/100"],
+            ["Issues abiertos", "14"],
+            ["Commits recientes", "9"]
+          ]
           : [
-              ["Issues abiertos", "30"],
-              ["Urgencia alta", "5"],
-              ["Sin etiquetar", "7"]
-            ];
+            ["Issues abiertos", "30"],
+            ["Urgencia alta", "5"],
+            ["Sin etiquetar", "7"]
+          ];
       const dashboardItems =
         recipe.id === "github-health-auditor"
           ? ["Actualizar dependencias críticas", "Reducir deuda en onboarding", "Mejorar cobertura de pruebas"]
@@ -387,19 +387,19 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
       onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
         updateValue(field.id, event.target.value),
       className: `
-        peer w-full rounded-2xl border bg-white/70 px-4 pt-6 pb-2 text-sm text-black outline-none transition-all duration-300
-        dark:bg-white/5 dark:text-white
+        peer w-full rounded-2xl border bg-white/70 px-4 pt-6 pb-2 text-sm outline-none transition-all duration-300
+        dark:bg-white/5
         ${isFocused ? 'border-transparent shadow-[0_0_0_2px_var(--accent-color)] bg-white dark:bg-white/10' : 'border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20'}
+        ${field.type === 'select' && !hasValue ? 'text-transparent dark:text-transparent' : 'text-black dark:text-white'}
       `
     };
 
     const labelElement = (
       <span
-        className={`absolute left-4 top-4 text-sm transition-all duration-300 pointer-events-none origin-left ${
-          isActive
-            ? "translate-y(-2px) scale-75 font-semibold text-[color:var(--accent-color)]"
-            : "translate-y-[2px] text-black/50 dark:text-white/50"
-        }`}
+        className={`absolute left-4 top-4 text-sm transition-all duration-300 pointer-events-none origin-left ${isActive
+          ? "translate-y(-2px) scale-75 font-semibold text-[color:var(--accent-color)]"
+          : "translate-y-[2px] text-black/50 dark:text-white/50"
+          }`}
       >
         {field.label} {field.required ? '*' : ''}
       </span>
@@ -411,9 +411,9 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
     } else if (field.type === "select") {
       inputElement = (
         <select {...commonProps}>
-          <option value="" disabled className="dark:bg-night dark:text-white">Selecciona una opción</option>
+          <option value="" disabled className="text-black dark:bg-night dark:text-white">Selecciona una opción</option>
           {field.options?.map((option) => (
-            <option key={option} value={option} className="dark:bg-night dark:text-white">
+            <option key={option} value={option} className="text-black dark:bg-night dark:text-white">
               {option}
             </option>
           ))}
