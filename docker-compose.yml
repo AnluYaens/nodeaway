@@ -10,7 +10,8 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3001}
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
   backend:
     build:
@@ -23,6 +24,18 @@ services:
       DATABASE_URL: ${DATABASE_URL:-sqlite:///./data/autopilot.db}
     volumes:
       - db-data:/app/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 volumes:
   db-data:
