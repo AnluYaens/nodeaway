@@ -390,6 +390,15 @@ async def _resolve_result(recipe: dict[str, Any], payload: dict[str, Any]) -> tu
     if not webhook_path:
         raise HTTPException(status_code=400, detail="El flujo (n8nWebhookPath) no está configurado para esta receta.")
 
+    if "repo" in payload and isinstance(payload["repo"], str):
+        repo_str = payload["repo"].strip()
+        if repo_str.startswith("http"):
+            try:
+                owner, name = _extract_github_repo(repo_str)
+                payload["repo"] = f"{owner}/{name}"
+            except HTTPException:
+                pass
+
     try:
         live_result = await trigger_workflow(webhook_path, payload)
         return _normalize_n8n_result(recipe["id"], live_result, payload), "live"
