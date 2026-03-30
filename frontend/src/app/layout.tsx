@@ -19,7 +19,7 @@ const displayFont = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3001"),
   title: "Nodeaway — Automatizaciones sin workflow",
   description: "Elige. Configura. Ejecuta. Automatizaciones listas para usar sin flujos visibles.",
   icons: {
