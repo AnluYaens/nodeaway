@@ -45,6 +45,17 @@ async def init_database() -> None:
         await database.execute(
             "CREATE INDEX IF NOT EXISTS idx_executions_created_at ON executions(created_at DESC)"
         )
+        await database.execute(
+            """
+            CREATE TABLE IF NOT EXISTS suggestions (
+                id TEXT PRIMARY KEY,
+                description TEXT NOT NULL,
+                category TEXT,
+                contact TEXT,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
         await database.commit()
 
 
@@ -80,6 +91,25 @@ async def save_execution(
                 json.dumps(result_data),
                 created_at,
             ),
+        )
+        await database.commit()
+
+
+async def save_suggestion(
+    *,
+    id: str,
+    description: str,
+    category: str | None,
+    contact: str | None,
+    created_at: str,
+) -> None:
+    async with aiosqlite.connect(DATABASE_PATH) as database:
+        await database.execute(
+            """
+            INSERT INTO suggestions (id, description, category, contact, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (id, description, category, contact, created_at),
         )
         await database.commit()
 

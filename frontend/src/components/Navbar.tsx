@@ -24,9 +24,10 @@ function MoonIcon() {
   );
 }
 
-const navLinks = [
+const navLinks: { href: string; label: string; badge?: string }[] = [
   { href: "/catalog", label: "Catálogo" },
-  { href: "/history", label: "Historial" }
+  { href: "/history", label: "Historial" },
+  { href: "/suggest", label: "Sugerir", badge: "Beta" }
 ];
 
 export function Navbar() {
@@ -66,13 +67,18 @@ export function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`rounded-full px-3 py-2 text-xs font-medium transition-all duration-200 sm:px-4 sm:text-sm ${
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition-all duration-200 sm:px-4 sm:text-sm ${
                       active
                         ? "bg-black text-white dark:bg-white dark:text-black"
                         : "text-black/60 hover:bg-black/5 hover:text-black dark:text-white/60 dark:hover:bg-white/5 dark:hover:text-white"
                     }`}
                   >
                     {link.label}
+                    {link.badge && (
+                      <span className="rounded-full bg-dev/15 px-1.5 py-0.5 text-[0.55rem] font-bold uppercase leading-none tracking-[0.15em] text-dev">
+                        {link.badge}
+                      </span>
+                    )}
                   </Link>
                 );
               })}

@@ -42,3 +42,14 @@ export function getHistory(): Promise<Execution[]> {
 export function getExecution(executionId: string): Promise<Execution> {
   return request<Execution>(`/api/history/${executionId}`);
 }
+
+export function submitSuggestion(data: {
+  descripcion: string;
+  categoria?: string;
+  contacto?: string;
+}): Promise<{ id: string; message: string }> {
+  return request<{ id: string; message: string }>("/api/suggestions", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
