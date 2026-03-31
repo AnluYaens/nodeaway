@@ -1,92 +1,200 @@
 <div align="center">
-  <img src="./frontend/public/icon.svg" alt="Nodeaway Logo" width="100" />
+  <img src="./frontend/public/icon.svg" alt="Nodeaway Logo" width="96" />
   <h1>Nodeaway</h1>
-  <p><strong>Elige. Configura. Ejecuta. Automatizaciones de alto nivel listas para usar, sin flujos visibles ni complicaciones.</strong></p>
+  <p><strong>Automatizaciones listas para usar con una interfaz cuidada, un backend ligero y n8n como motor real de ejecución.</strong></p>
 </div>
 
-<hr/>
+Nodeaway empaqueta automatizaciones complejas en una experiencia simple: el usuario elige una receta, completa un formulario y recibe un resultado útil sin tener que tocar nodos, prompts ni integraciones.
 
-## 🚀 La Visión del Proyecto (Hackathon)
+El objetivo del proyecto en hackathon es claro: esconder la complejidad operativa sin esconder la lógica. La fuente de verdad sigue siendo la automatización en n8n, pero la experiencia se presenta como un producto final, no como un builder.
 
-El ecosistema actual de automatizaciones (n8n, Make, Zapier) es excelente para ingenieros de sistemas, pero es **intimidante** para el usuario de negocios promedio. Ver diagramas complejos de nodos ahuyenta la adopción.
+## Qué resuelve
 
-**Nodeaway** invierte el paradigma: empaquetamos flujos de automatización altamente complejos en "Recetas" fáciles de digerir. El usuario final solo ve un catálogo Premium, llena un formulario simple (Ej. _"Analiza mi web"_) y Nodeaway hace la magia técnica en las sombras empleando IA Generativa y Webhooks estrictos.
+- Reduce la fricción de uso de herramientas tipo n8n, Make o Zapier para usuarios no técnicos.
+- Convierte workflows en recetas con contrato de entrada y salida estable.
+- Mantiene trazabilidad: FastAPI dispara webhooks reales de n8n, guarda historial y renderiza resultados en una UI enfocada en demo y uso real.
 
-## 🛠 Arquitectura Técnica (El Stack)
+## Automatizaciones incluidas
 
-Este no es un MVP frágil; Nodeaway está construido sobre una arquitectura distribuida tolerante a fallos:
+Actualmente el catálogo incluye 6 workflows activos:
 
-- **Frontend Cautivador:** Aplicación construida en **Next.js 14 (React)**, estéticamente revolucionada con **Tailwind CSS** y animaciones hiper-suaves con **Framer Motion**. Diseño responsivo inspirado en librerías de componentes UI premium (21st.dev).
-- **API Gateway Ágil:** Microservicio core en **FastAPI (Python)** que maneja las solicitudes asíncronas, enruta payloads, interactúa con la base de datos veloz en **SQLite**, y mantiene viva la comunicación mediante _Webhooks_.
-- **Orquestador Fantasma:** **N8N** operando de motor en el backend profundo ("Headless"), encargado del enrutamiento de red, raspado de datos (Scraping) sin bloqueos SSL locales e integración inter-app.
-- **Cerebro Semántico:** Integración nativa a cero latencia con **Google Gemini (Flash)**. Toda la data cruda, sin importar su nivel de desorden en internet, es tabulada a formato JSON estructurado perfecto por modelos LLM de nueva generación.
+1. `landing-page-analyzer`
+   Analiza una landing page y devuelve score, secciones, diagnóstico y recomendaciones.
+2. `github-health-auditor`
+   Evalúa la salud general de un repositorio público de GitHub, incluyendo contributors, issues y señales de mantenimiento.
+3. `github-issue-summarizer`
+   Resume y clasifica issues abiertos por prioridad.
+4. `reddit-opinion-radar`
+   Consulta Reddit y devuelve opinión agregada o un estado controlado si la fuente no está disponible.
+5. `rss-news-digest`
+   Genera un digest de noticias recientes a partir de RSS de Google News.
+6. `social-post-generator`
+   Genera copies para varias redes y una imagen de campaña a partir de la descripción de un producto.
 
-## 🔗 Demo y Repositorio
-
-- **🌐 Link a la Demo en vivo:** [https://nodeawayhack.duckdns.org](https://nodeawayhack.duckdns.org)
-- **📁 Repositorio Público:** Este código está disponible en [https://github.com/AnluYaens/nodeaway](https://github.com/AnluYaens/nodeaway).
-
-### Diagrama de Flujo (System Design)
+## Arquitectura
 
 ```mermaid
 graph TD
-    A[Usuario Final en App Next.js] -->|Completa Formulario UI| B(API FastAPI)
-    B -->|Guarda Registro Inicial en SQLite| C{Webhook hacia n8n}
-    C -->|Bypass Criptográfico TLS/SSL| D[Scraper: Extracción HTML/RSS/GitHub]
-    D --> E((Cerebro: Google Gemini AI))
-    E -->|Devuelve Estructura JSON Perfecta| F[Mapeo Estricto de n8n]
-    F -->|HTTP 200 OK Response| B
-    B -->|Renderiza Resultados| A
+    A[Next.js Frontend] -->|Formulario| B[FastAPI Backend]
+    B -->|Webhook HTTP| C[n8n]
+    C --> D[GitHub / Reddit / RSS / Web / Pollinations / Gemini]
+    C -->|JSON estructurado| B
+    B -->|Historial y resultados| E[(SQLite)]
+    B -->|Respuesta final| A
 ```
 
-## ⚙️ Cómo Correr el Proyecto (Despliegue Rápido)
+### Capas del sistema
 
-Con `docker-compose`, Nodeaway se despliega interconectando sus continentes en un solo comando, con su propia red y resolución de puertos internos y variables de entorno (`.env`):
+- `frontend/`
+  Aplicación en Next.js 14 con TypeScript, Tailwind CSS y Framer Motion.
+- `backend/`
+  API en FastAPI que valida payloads, llama a n8n, normaliza respuestas y persiste historial en SQLite.
+- `n8n`
+  Motor de automatización real. Los workflows se exponen mediante webhooks y resuelven la lógica de negocio.
 
-### 1. Variables de Entorno
+## Stack
 
-Clona de plantilla e inyecta tus credenciales, especialmente la de Gemini:
+- Frontend: Next.js 14, React 18, TypeScript, Tailwind CSS, Framer Motion
+- Backend: FastAPI, httpx, aiosqlite, uvicorn
+- Orquestación: n8n
+- Persistencia: SQLite
+- Integraciones: GitHub, Reddit, RSS, scraping web, Pollinations, Gemini
+
+## Decisiones técnicas importantes
+
+- La fuente de verdad es n8n.
+  El frontend no inventa resultados ni usa rutas paralelas fuera de los workflows.
+- Los contratos de salida están normalizados.
+  FastAPI valida y adapta respuestas para que la UI reciba estructuras consistentes.
+- Los workflows críticos no dependen ciegamente del LLM.
+  Donde aporta valor, Gemini actúa como enriquecimiento opcional; donde no, la salida se calcula de forma determinista.
+- La app guarda historial de ejecuciones.
+  Esto permite reabrir resultados y mostrar una experiencia más cercana a producto.
+
+## Estado actual del proyecto
+
+Antes de la entrega se revisó el sistema completo y se corrigieron varios puntos de riesgo:
+
+- validación más estricta para URLs de entrada y bloqueo de destinos internos obvios
+- eliminación de exposición innecesaria de `n8nWebhookPath` hacia el frontend
+- CORS endurecido con allowlist configurable
+- contributors reales en `github-health-auditor`
+- manejo controlado de `403` en Reddit sin alucinaciones
+- salida no vacía y validada en `landing-page-analyzer`
+- deduplicación de fuentes en `rss-news-digest`
+- fallback robusto de imagen en `social-post-generator`
+
+## Validación realizada
+
+En la revisión final se comprobó:
+
+- build del frontend correcto con `npm run build`
+- compilación estructural del backend correcta
+- pruebas reales de los 6 workflows activas el `31 de marzo de 2026`
+
+Workflows probados:
+
+- `landing-page-analyzer` con `https://www.infolavelada.com/`
+- `github-health-auditor` con `facebook/react`
+- `github-issue-summarizer` con `vercel/next.js`
+- `reddit-opinion-radar` con `notion calendar`
+- `rss-news-digest` con `IA, Startups`
+- `social-post-generator` con `laptop msi delta 15`
+
+## Demo
+
+- Demo en vivo: [https://nodeawayhack.duckdns.org](https://nodeawayhack.duckdns.org)
+- Repositorio: [https://github.com/AnluYaens/nodeaway](https://github.com/AnluYaens/nodeaway)
+
+## Cómo levantar el proyecto
+
+### Requisitos
+
+- Node.js 18+
+- Python 3.11+
+- una instancia de n8n accesible por webhook
+
+### 1. Variables de entorno
 
 ```bash
 cp .env.example .env
 ```
 
-Asegúrate de poner tu llave de Gemini:
-`GEMINI_API_KEY=tu_api_key_aqui`
+Variables relevantes:
 
-### 2. Levantar la Orquestación Completa
+- `N8N_API_URL`
+  URL base de tu instancia de n8n. El backend llama a `webhook/...` sobre esta base.
+- `N8N_API_KEY`
+  Usada por el MCP y operaciones de mantenimiento sobre n8n.
+- `NEXT_PUBLIC_API_URL`
+  URL pública del backend.
+- `NEXT_PUBLIC_SITE_URL`
+  URL pública del frontend.
+- `CORS_ALLOW_ORIGINS`
+  Lista separada por comas de orígenes permitidos para el backend.
 
-_(Docker se encargará del healthcheck al backend antes de encender Next.js)_
+### 2. Levantar con Docker Compose
+
+`docker-compose.yml` levanta frontend y backend. n8n debe estar disponible aparte en la URL configurada.
 
 ```bash
 docker-compose up -d --build
 ```
 
-## ☁️ Despliegue en CubePath (Cloud Infrastructure)
+Servicios expuestos:
 
-Para cumplir con la alta demanda que exige orquestar Inteligencia Artificial, webhooks y frontend en tiempo real, **toda la infraestructura de Nodeaway está alojada nativamente en VPS de CubePath** (`vps23596.cubepath.net`).
+- frontend: `http://localhost:3001`
+- backend: `http://localhost:8000`
 
-**¿Cómo utilizamos CubePath en este proyecto?**
+### 3. Levantar en local sin Docker
 
-1. **N8N Dedicado:** Levantamos el orquestador n8n como un servicio robusto directamente en una instancia de CubePath para garantizar un _uptime_ impecable y latencia cero al ejecutar los webhooks de automatización.
-2. **Dockploy:** Utilizamos Dockploy sobre la infraestructura de CubePath para el CI/CD y gestión ágil de los contenedores (Next.js y FastAPI), permitiendo escalar o reiniciar servicios con un solo clic.
-3. **Red Interna:** Al tener las bases de datos (SQLite), la API en Python y N8N en la misma VPC/Instancia de CubePath, la comunicación interna es rápida y segura, esquivando latencias externas en los requests.
+Backend:
 
-## 📸 Pantallas del Producto
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
 
-_(Agrega aquí capturas o GIFs demostrando cómo se usa y los resultados de Gemini generados por n8n)._
+Frontend:
 
-![Demo Nodeaway](./frontend/public/og-image.svg)
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## ✒️ Autores y Derechos
+## Estructura del repositorio
 
-Este proyecto fue ideado, diseñado y desarrollado íntegramente para esta Hackathon por el equipo fundador:
+```text
+frontend/                 App de usuario en Next.js
+backend/                  API FastAPI, recetas, modelos y servicios
+backend/recipes/          Definición de catálogo y formularios
+backend/n8n-workflows/    Exports locales de workflows
+backend/n8n-workflows-samples/
+.env.example              Plantilla de configuración
+docker-compose.yml        Orquestación local de frontend + backend
+```
 
-- **Angel Jaen** ([@anluyaens](https://github.com/anluyaens))
-- **Sebastián Armas**
+## Capturas
 
-_El código fuente de este repositorio se hace público con fines evaluativos para la Hackathon. No obstante, la marca comercial "Nodeaway", su propuesta de valor, diseño de producto y derechos de propiedad intelectual subyacentes están estrictamente reservados por sus autores (2026)._
+Puedes usar la identidad visual ya incluida en el proyecto:
+
+![Nodeaway](./frontend/public/og-image.svg)
+
+## Limitaciones conocidas
+
+- Algunos proveedores externos pueden devolver bloqueos o rate limits; cuando eso ocurre, los workflows deben responder un estado controlado y no inventar contenido.
+- `docker-compose.yml` no levanta n8n dentro del mismo stack, por lo que la instancia de n8n debe existir previamente.
+- El proyecto está preparado para demo y hackathon; aún admite más hardening para un entorno de producción estricto.
+
+## Equipo
+
+- Angel Jaen
+- Sebastián Armas
 
 ---
 
-> _"Los flujos de trabajo son para los ingenieros. Los resultados son para los clientes."_ — **Nodeaway**
+> Nodeaway no vende nodos. Vende resultados.
