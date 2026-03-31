@@ -382,28 +382,18 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
       name: field.id,
       required: field.required,
       value: values[field.id] || "",
+      placeholder: `${field.label} ${field.required ? '*' : ''}`,
       onFocus: () => setFocusedField(field.id),
       onBlur: () => setFocusedField(null),
       onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
         updateValue(field.id, event.target.value),
       className: `
-        peer w-full rounded-2xl border bg-white/70 px-4 pt-6 pb-2 text-sm outline-none transition-all duration-300
-        dark:bg-white/5
-        ${isFocused ? 'border-transparent shadow-[0_0_0_2px_var(--accent-color)] bg-white dark:bg-white/10' : 'border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20'}
-        ${field.type === 'select' && !hasValue ? 'text-transparent dark:text-transparent' : 'text-black dark:text-white'}
+        peer w-full rounded-2xl border bg-white/70 px-4 py-4 text-sm outline-none transition-all duration-300
+        dark:bg-white/5 placeholder:text-black/40 dark:placeholder:text-white/40
+        ${isFocused ? 'border-transparent bg-white dark:bg-white/10' : 'border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20'}
+        ${field.type === 'select' && !hasValue ? 'text-black/40 dark:text-white/40' : 'text-black dark:text-white'}
       `
     };
-
-    const labelElement = (
-      <span
-        className={`absolute left-4 top-4 text-sm transition-all duration-300 pointer-events-none origin-left ${isActive
-          ? "translate-y(-2px) scale-75 font-semibold text-[color:var(--accent-color)]"
-          : "translate-y-[2px] text-black/50 dark:text-white/50"
-          }`}
-      >
-        {field.label} {field.required ? '*' : ''}
-      </span>
-    );
 
     let inputElement;
     if (field.type === "textarea") {
@@ -433,7 +423,6 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
     return (
       <div className="relative group flex flex-col">
         {inputElement}
-        {labelElement}
         {/* Glow behind the input on focus */}
         {isFocused && (
           <motion.div
@@ -608,9 +597,18 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
 
               <div className="grid gap-3">
                 {Array.from({ length: 2 }).map((_, index) => (
-                  <div
+                  <motion.div
                     key={`skeleton-panel-${index + 1}`}
-                    className="h-24 animate-pulse rounded-2xl border border-black/10 bg-white/70 dark:border-white/10 dark:bg-white/5"
+                    initial={{ opacity: 0.3 }}
+                    animate={{ opacity: 1 }}
+                    transition={{
+                      duration: 1.2,
+                      repeat: Infinity,
+                      repeatType: "mirror",
+                      ease: "easeInOut",
+                      delay: index * 0.2,
+                    }}
+                    className="h-24 rounded-2xl border border-black/10 bg-white/70 dark:border-white/10 dark:bg-white/5"
                   />
                 ))}
               </div>
