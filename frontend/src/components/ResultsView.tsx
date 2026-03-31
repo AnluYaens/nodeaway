@@ -256,6 +256,23 @@ export function ResultsView({ executionId }: ResultsViewProps) {
   const landingSummary = landingReport
     ? `Analisis de landing para ${analyzedHost}. Revisamos copy, estructura y propuesta de valor para detectar los puntos que mas afectan claridad y conversion.`
     : "";
+  const textResult = execution.result.type === "text" ? execution.result : null;
+  const textContext =
+    textResult?.context && typeof textResult.context === "object"
+      ? textResult.context
+      : null;
+  const rssThemes = Array.isArray(textContext?.themes)
+    ? textContext.themes.map((item) => String(item).trim()).filter(Boolean)
+    : [];
+  const rssHighlights = Array.isArray(textContext?.highlights)
+    ? textContext.highlights.filter((item): item is { title?: string; source?: string; url?: string; note?: string } => !!item && typeof item === "object")
+    : [];
+  const rssSources = Array.isArray(textContext?.sources)
+    ? textContext.sources.filter((item): item is { title?: string; source?: string; url?: string } => !!item && typeof item === "object")
+    : [];
+  const rssArticlesFound = Number(textContext?.articlesFound || 0);
+  const rssTopic = typeof textContext?.topic === "string" ? textContext.topic.trim() : "";
+  const rssSummary = typeof textContext?.summary === "string" ? textContext.summary.trim() : "";
 
   return (
     <motion.div
@@ -376,6 +393,7 @@ export function ResultsView({ executionId }: ResultsViewProps) {
                 hashtags={post.hashtags}
                 imagePrompt={post.imagePrompt}
                 imageBase64={post.imageBase64}
+                imageUrl={post.imageUrl}
               />
             </motion.div>
           ))}
@@ -642,34 +660,169 @@ export function ResultsView({ executionId }: ResultsViewProps) {
 
       {/* ── Text Pattern ─── */}
       {execution.result.type === "text" ? (
-        <section className="glass-panel-strong relative overflow-hidden rounded-[2rem] p-8 lg:p-10 shadow-panel group">
-          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[color:var(--accent-color)] to-transparent opacity-60" style={{ "--accent-color": category.color } as CSSProperties} />
-          {(() => {
-            const textResult = execution.result;
-            return (
-              <>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                  <h2 className="text-2xl font-semibold">Texto generado</h2>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.95 }}
-                    type="button"
-                    onClick={() => void copyText(textResult.content, "text-result")}
-                    className={`inline-flex items-center justify-center gap-2.5 rounded-full px-5 py-2.5 text-sm font-semibold shadow-sm transition-colors ${copiedToken === "text-result" ? 'bg-emerald-500 text-white' : category.buttonClassName}`}
-                  >
-                    {copiedToken === "text-result" ? <CheckIcon /> : <ClipboardIcon />}
-                    {copiedToken === "text-result" ? "Copiado al portapapeles" : "Copiar texto"}
-                  </motion.button>
-                </div>
-                <div className="mt-8 rounded-2xl bg-white/50 p-6 shadow-inner dark:bg-black/20">
-                  <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-black/80 dark:text-white/80">
-                    {textResult.content}
+        execution.recipeId === "rss-news-digest" ? (
+          <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="glass-panel-strong relative overflow-hidden rounded-[2rem] p-8 lg:p-10 shadow-panel group">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[color:var(--accent-color)] to-transparent opacity-60" style={{ "--accent-color": category.color } as CSSProperties} />
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/45 dark:text-white/45">
+                    Briefing
+                  </p>
+                  <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">
+                    {rssTopic || "Boletín de noticias"}
+                  </h2>
+                  <p className="mt-3 max-w-3xl text-sm leading-7 text-black/64 dark:text-white/64">
+                    {rssSummary || textResult?.content}
                   </p>
                 </div>
-              </>
-            );
-          })()}
-        </section>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.95 }}
+                  type="button"
+                  onClick={() => void copyText(textResult?.content || "", "text-result")}
+                  className={`inline-flex items-center justify-center gap-2.5 rounded-full px-5 py-2.5 text-sm font-semibold shadow-sm transition-colors ${copiedToken === "text-result" ? 'bg-emerald-500 text-white' : category.buttonClassName}`}
+                >
+                  {copiedToken === "text-result" ? <CheckIcon /> : <ClipboardIcon />}
+                  {copiedToken === "text-result" ? "Copiado al portapapeles" : "Copiar briefing"}
+                </motion.button>
+              </div>
+
+              <div className="mt-8 grid gap-4 md:grid-cols-3">
+                <div className="rounded-[1.5rem] border border-black/10 bg-white/50 p-5 dark:border-white/10 dark:bg-white/5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/42 dark:text-white/42">
+                    Artículos
+                  </p>
+                  <p className="mt-3 text-4xl font-semibold">{rssArticlesFound}</p>
+                </div>
+                <div className="rounded-[1.5rem] border border-black/10 bg-white/50 p-5 dark:border-white/10 dark:bg-white/5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/42 dark:text-white/42">
+                    Ángulos clave
+                  </p>
+                  <p className="mt-3 text-4xl font-semibold">{rssThemes.length}</p>
+                </div>
+                <div className="rounded-[1.5rem] border border-black/10 bg-white/50 p-5 dark:border-white/10 dark:bg-white/5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/42 dark:text-white/42">
+                    Fuentes
+                  </p>
+                  <p className="mt-3 text-4xl font-semibold">{rssSources.length}</p>
+                </div>
+              </div>
+
+              {rssThemes.length ? (
+                <div className="mt-8 rounded-[1.75rem] border border-black/10 bg-white/50 p-6 dark:border-white/10 dark:bg-white/5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/42 dark:text-white/42">
+                    Ángulos clave
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {rssThemes.map((theme) => (
+                      <span
+                        key={theme}
+                        className={`rounded-full border px-3 py-1 text-xs font-medium ${category.softClassName}`}
+                      >
+                        {theme}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {rssHighlights.length ? (
+                <div className="mt-8 space-y-3">
+                  {rssHighlights.map((item, index) => (
+                    <motion.a
+                      key={`${item.title}-${index + 1}`}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.08 * index }}
+                      href={item.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block rounded-[1.5rem] border border-black/10 bg-white/55 p-5 transition hover:border-black/20 hover:bg-white/70 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20 dark:hover:bg-white/10"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-base font-semibold text-black dark:text-white">{item.title}</p>
+                          <p className="mt-2 text-sm leading-6 text-black/62 dark:text-white/62">
+                            {item.source || "Fuente no identificada"}{item.note ? ` · ${item.note}` : ""}
+                          </p>
+                        </div>
+                        <span className="text-xs uppercase tracking-[0.18em] text-black/42 dark:text-white/42">
+                          Abrir
+                        </span>
+                      </div>
+                    </motion.a>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-8 rounded-2xl bg-white/50 p-6 shadow-inner dark:bg-black/20">
+                  <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-black/80 dark:text-white/80">
+                    {textResult?.content}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <aside className="space-y-5">
+              <div className="rounded-[1.75rem] border border-black/10 bg-white/92 p-6 shadow-sm dark:border-white/10 dark:bg-[#11161d]">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/42 dark:text-white/42">
+                  Fuentes principales
+                </p>
+                {rssSources.length ? (
+                  <div className="mt-4 space-y-3">
+                    {rssSources.slice(0, 6).map((source, index) => (
+                      <a
+                        key={`${source.title}-${index + 1}`}
+                        href={source.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block rounded-[1.25rem] border border-black/10 bg-black/[0.02] p-4 transition hover:border-black/20 hover:bg-black/[0.04] dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-white/20 dark:hover:bg-white/[0.05]"
+                      >
+                        <p className="text-sm font-semibold leading-6 text-black dark:text-white">{source.title}</p>
+                        <p className="mt-2 text-xs uppercase tracking-[0.16em] text-black/42 dark:text-white/42">
+                          {source.source || "Fuente no identificada"}
+                        </p>
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-4 text-sm leading-7 text-black/64 dark:text-white/64">
+                    No se detectaron fuentes enlazables en esta ejecución.
+                  </p>
+                )}
+              </div>
+            </aside>
+          </section>
+        ) : (
+          <section className="glass-panel-strong relative overflow-hidden rounded-[2rem] p-8 lg:p-10 shadow-panel group">
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[color:var(--accent-color)] to-transparent opacity-60" style={{ "--accent-color": category.color } as CSSProperties} />
+            {(() => {
+              const textResult = execution.result;
+              return (
+                <>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                    <h2 className="text-2xl font-semibold">Texto generado</h2>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.95 }}
+                      type="button"
+                      onClick={() => void copyText(textResult.content, "text-result")}
+                      className={`inline-flex items-center justify-center gap-2.5 rounded-full px-5 py-2.5 text-sm font-semibold shadow-sm transition-colors ${copiedToken === "text-result" ? 'bg-emerald-500 text-white' : category.buttonClassName}`}
+                    >
+                      {copiedToken === "text-result" ? <CheckIcon /> : <ClipboardIcon />}
+                      {copiedToken === "text-result" ? "Copiado al portapapeles" : "Copiar texto"}
+                    </motion.button>
+                  </div>
+                  <div className="mt-8 rounded-2xl bg-white/50 p-6 shadow-inner dark:bg-black/20">
+                    <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-black/80 dark:text-white/80">
+                      {textResult.content}
+                    </p>
+                  </div>
+                </>
+              );
+            })()}
+          </section>
+        )
       ) : null}
 
       {/* ── Actions ─── */}

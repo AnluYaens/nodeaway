@@ -62,15 +62,26 @@ export function AutomationCard({ recipe }: AutomationCardProps) {
           >
             {category.label}
           </span>
-          {recipe.popular ? (
-            <motion.span
-              initial={{ scale: 1 }}
-              whileHover={{ scale: 1.05 }}
-              className="rounded-full bg-black px-3 py-1 text-xs font-medium text-white shadow-sm dark:bg-white dark:text-black"
-            >
-              Popular
-            </motion.span>
-          ) : null}
+          <div className="flex items-center gap-2">
+            {recipe.beta ? (
+              <motion.span
+                initial={{ scale: 1 }}
+                whileHover={{ scale: 1.05 }}
+                className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200"
+              >
+                Beta
+              </motion.span>
+            ) : null}
+            {recipe.popular ? (
+              <motion.span
+                initial={{ scale: 1 }}
+                whileHover={{ scale: 1.05 }}
+                className="rounded-full bg-black px-3 py-1 text-xs font-medium text-white shadow-sm dark:bg-white dark:text-black"
+              >
+                Popular
+              </motion.span>
+            ) : null}
+          </div>
         </div>
 
         <div className="relative z-[3] mt-5 flex min-h-[12.5rem] flex-col">

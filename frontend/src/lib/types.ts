@@ -23,6 +23,7 @@ export type Recipe = {
   estimatedTime: string;
   integrations: string[];
   popular: boolean;
+  beta?: boolean;
   fields: Field[];
   resultTemplate: {
     type: ResultType;
@@ -58,6 +59,7 @@ export type SocialPostResult = {
     hashtags: string[];
     imagePrompt: string;
     imageBase64?: string | null;
+    imageUrl?: string | null;
   }>;
   mode?: string;
 };

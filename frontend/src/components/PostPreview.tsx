@@ -13,6 +13,7 @@ type PostPreviewProps = {
   hashtags: string[];
   imagePrompt: string;
   imageBase64?: string | null;
+  imageUrl?: string | null;
 };
 
 function ClipboardIcon() {
@@ -32,9 +33,24 @@ function CheckIcon() {
   );
 }
 
-export function PostPreview({ brandName, platform, text, hashtags, imagePrompt, imageBase64 }: PostPreviewProps) {
+function buildPreviewHandle(brandName: string) {
+  const slug = brandName
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '')
+    .slice(0, 18);
+
+  return `@${slug || "nodeaway"}`;
+}
+
+export function PostPreview({ brandName, platform, text, hashtags, imagePrompt, imageBase64, imageUrl }: PostPreviewProps) {
   const [copied, setCopied] = useState(false);
   const { showToast } = useToast();
+  const previewImage = imageBase64
+    ? (imageBase64.startsWith("data:") ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`)
+    : imageUrl || null;
+  const previewHandle = buildPreviewHandle(brandName);
 
   async function handleCopy() {
     await navigator.clipboard.writeText([text, hashtags.join(" ")].filter(Boolean).join("\n\n"));
@@ -57,7 +73,7 @@ export function PostPreview({ brandName, platform, text, hashtags, imagePrompt, 
           </div>
           <div>
             <p className="text-sm font-semibold">{brandName}</p>
-            <p className="text-xs text-black/50 dark:text-white/50">@autopilot-preview</p>
+            <p className="text-xs text-black/50 dark:text-white/50">{previewHandle}</p>
           </div>
         </div>
         <span className="rounded-full border border-black/10 px-3 py-1 text-xs font-medium text-black/65 dark:border-white/10 dark:text-white/65">
@@ -66,6 +82,16 @@ export function PostPreview({ brandName, platform, text, hashtags, imagePrompt, 
       </div>
 
       <div className="space-y-4 p-5">
+        {previewImage ? (
+          <div className="overflow-hidden rounded-[1.25rem] border border-black/8 bg-black/[0.03] dark:border-white/10 dark:bg-white/[0.03]">
+            <img
+              src={previewImage}
+              alt={`Preview visual para ${brandName} en ${platform}`}
+              className="h-52 w-full object-cover"
+            />
+          </div>
+        ) : null}
+
         <div>
           <p className="text-sm leading-7 text-black/78 dark:text-white/78">{text}</p>
           {hashtags.length > 0 ? (

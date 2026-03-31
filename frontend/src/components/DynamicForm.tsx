@@ -694,9 +694,16 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
           <span className="transition-transform group-hover:-translate-x-1">←</span> Volver al catálogo
         </Link>
         <div className="mt-6">
-          <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] ${category.softClassName}`}>
-            {category.label}
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] ${category.softClassName}`}>
+              {category.label}
+            </span>
+            {recipe.beta ? (
+              <span className="inline-flex rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
+                Beta
+              </span>
+            ) : null}
+          </div>
           <h1 className="mt-4 font-display text-5xl leading-none sm:text-6xl">{recipe.title}</h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-black/65 dark:text-white/65">
             {recipe.description}
@@ -704,6 +711,12 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
         </div>
 
         <form className="mt-10 space-y-6" onSubmit={handleSubmit}>
+          {recipe.beta ? (
+            <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-7 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
+              Esta automatización está en beta. La interfaz funciona, pero la fuente real de Reddit sigue limitada hasta conectar una API estable.
+            </div>
+          ) : null}
+
           {recipe.fields.map((field) => (
             <div key={field.id} className="relative">
               {renderField(field)}

@@ -13,7 +13,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    const message = await response.text();
+    const rawMessage = await response.text();
+    let message = rawMessage.trim();
+
+    try {
+      const parsed = JSON.parse(rawMessage) as { detail?: string; message?: string };
+      message = (parsed.detail || parsed.message || message).trim();
+    } catch {
+      // Keep raw text when the backend did not return JSON.
+    }
+
     throw new Error(message || `API request failed: ${response.status}`);
   }
 
