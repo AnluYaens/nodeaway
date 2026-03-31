@@ -12,7 +12,7 @@
     {
       "id": "url",
       "label": "URL de la landing page",
-      "type": "text",
+      "type": "url",
       "placeholder": "https://example.com",
       "required": true
     },

@@ -116,6 +116,11 @@ def _extract_github_repo(repo_url: str) -> tuple[str, str]:
     return owner, repo
 
 
+def _extract_url_host(url: str) -> str:
+    parsed = urlparse(url.strip())
+    return parsed.netloc.replace("www.", "", 1).strip()
+
+
 def _safe_number(value: Any, fallback: int = 0) -> int:
     try:
         return int(value)
@@ -173,6 +178,46 @@ def _extract_tag_texts(html: str, tag: str, limit: int = 8) -> list[str]:
         if len(results) >= limit:
             break
     return results
+
+
+def _score_in_range(value: Any, fallback: int) -> int:
+    return max(0, min(100, _safe_number(value, fallback)))
+
+
+def _has_meaningful_text(value: Any, minimum_length: int = 40) -> bool:
+    cleaned = str(value or "").strip()
+    return len(cleaned) >= minimum_length
+
+
+def _landing_headline(headline: Any, payload: dict[str, Any]) -> str:
+    cleaned = str(headline or "").strip()
+    host = _extract_url_host(str(payload.get("url", "")).strip())
+    if not cleaned or "http" in cleaned or len(cleaned) > 120:
+        return f"Analisis de landing para {host or 'la pagina analizada'}"
+    return cleaned
+
+
+def _landing_result_needs_fallback(result: dict[str, Any], payload: dict[str, Any]) -> bool:
+    del payload
+    if result.get("type") != "report":
+        return False
+
+    sections = result.get("sections", [])
+    meaningful_sections = 0
+    if isinstance(sections, list):
+        meaningful_sections = sum(
+            1
+            for section in sections
+            if isinstance(section, dict) and _has_meaningful_text(section.get("content"))
+        )
+
+    recommendations = result.get("recommendations", [])
+    has_recommendations = (
+        isinstance(recommendations, list)
+        and any(_has_meaningful_text(item, minimum_length=16) for item in recommendations)
+    )
+
+    return meaningful_sections < 2 or not has_recommendations
 
 
 def _language_config(language: str) -> dict[str, str]:
@@ -345,23 +390,51 @@ def _normalize_n8n_rss_digest(result: dict[str, Any]) -> dict[str, Any]:
 
 def _normalize_n8n_landing_report(result: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
     analysis = result.get("analysis", {}) if isinstance(result.get("analysis"), dict) else {}
+    section_scores = result.get("sectionScores", {}) if isinstance(result.get("sectionScores"), dict) else {}
+    copy_content = str(analysis.get("copy", "")).strip()
+    structure_content = str(analysis.get("structure", "")).strip()
+    cta_content = str(analysis.get("cta", "")).strip()
+    value_prop_content = str(analysis.get("valueProposition", "")).strip()
+    structure_and_cta = "\n\n".join(part for part in (structure_content, cta_content) if part)
+    recommendations = result.get("recommendations", [])
+    clean_recommendations = [
+        str(item).strip()
+        for item in recommendations
+        if str(item).strip()
+    ] if isinstance(recommendations, list) else []
+
     sections = [
-        {"title": "Copy", "score": _safe_number(result.get("score"), 78), "content": str(analysis.get("copy", "")).strip()},
-        {"title": "Estructura y CTA", "score": _safe_number(result.get("score"), 78), "content": str(analysis.get("structure", "")).strip()},
+        {
+            "title": "Copy",
+            "score": _score_in_range(section_scores.get("copy"), _safe_number(result.get("score"), 78)),
+            "content": copy_content,
+        },
+        {
+            "title": "Estructura y CTA",
+            "score": _score_in_range(
+                section_scores.get("structure", section_scores.get("cta")),
+                _safe_number(result.get("score"), 78),
+            ),
+            "content": structure_and_cta,
+        },
         {
             "title": "Propuesta de valor",
-            "score": _safe_number(result.get("score"), 78),
-            "content": str(analysis.get("valueProposition", analysis.get("cta", ""))).strip(),
+            "score": _score_in_range(section_scores.get("valueProposition"), _safe_number(result.get("score"), 78)),
+            "content": value_prop_content or cta_content,
         },
     ]
 
-    return {
+    report = {
         "type": "report",
-        "headline": str(result.get("headline", f"Análisis de landing page para {payload.get('url', 'la landing')}")).strip(),
-        "score": _safe_number(result.get("score"), 78),
+        "headline": _landing_headline(result.get("headline"), payload),
+        "score": _score_in_range(result.get("score"), 78),
         "sections": sections,
-        "recommendations": result.get("recommendations", []),
+        "recommendations": clean_recommendations,
     }
+    context = result.get("context")
+    if isinstance(context, dict):
+        report["context"] = context
+    return report
 
 
 def _normalize_n8n_result(recipe_id: str, result: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
@@ -401,8 +474,16 @@ async def _resolve_result(recipe: dict[str, Any], payload: dict[str, Any]) -> tu
 
     try:
         live_result = await trigger_workflow(webhook_path, payload)
-        return _normalize_n8n_result(recipe["id"], live_result, payload), "live"
+        normalized_result = _normalize_n8n_result(recipe["id"], live_result, payload)
+        if recipe["id"] == "landing-page-analyzer" and _landing_result_needs_fallback(normalized_result, payload):
+            raise HTTPException(
+                status_code=502,
+                detail="La automatización devolvió un análisis incompleto de la landing. Mejora el workflow para devolver secciones con contenido y recomendaciones.",
+            )
+        return normalized_result, "live"
     except Exception as error:
+        if isinstance(error, HTTPException):
+            raise
         raise HTTPException(status_code=400, detail=f"Error en la ejecución de n8n: {error}")
 
 

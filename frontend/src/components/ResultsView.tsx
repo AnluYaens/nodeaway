@@ -8,7 +8,7 @@ import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useToast } from "@/components/providers/AppProviders";
 import { categoryMeta, recipeCategoryById } from "@/lib/category";
 import { getExecution } from "@/lib/api";
-import type { Execution, RecipeCategory } from "@/lib/types";
+import type { Execution } from "@/lib/types";
 
 import { PostPreview } from "./PostPreview";
 
@@ -99,7 +99,17 @@ function LoadingState() {
           transition={{ duration: 1.1, repeat: Infinity, repeatType: "reverse" }}
           className="h-2 origin-left rounded-full bg-gradient-to-r from-dev via-life to-biz"
         />
-        <div className="h-40 animate-pulse rounded-[1.5rem] bg-black/5 dark:bg-white/5" />
+        <motion.div
+          initial={{ opacity: 0.3 }}
+          animate={{ opacity: 1 }}
+          transition={{
+            duration: 1.2,
+            repeat: Infinity,
+            repeatType: "mirror",
+            ease: "easeInOut",
+          }}
+          className="h-40 rounded-[1.5rem] bg-black/5 dark:bg-white/5"
+        />
       </div>
     </div>
   );
@@ -122,11 +132,56 @@ function CheckIcon() {
   );
 }
 
+function getScoreLabel(score: number) {
+  if (score < 40) return "Critico";
+  if (score < 70) return "Mejorable";
+  return "Solido";
+}
+
+function getScoreToneClassName(score: number) {
+  if (score < 40) {
+    return "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200";
+  }
+
+  if (score < 70) {
+    return "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200";
+  }
+
+  return "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200";
+}
+
+function getScoreSummary(score: number) {
+  if (score < 40) {
+    return "La pagina necesita una revision fuerte de claridad, estructura y conversion.";
+  }
+
+  if (score < 70) {
+    return "Hay una base util, pero todavia hay friccion visible en mensaje y CTA.";
+  }
+
+  return "La landing transmite bien el valor y solo necesita ajustes finos.";
+}
+
+function getInputUrl(input: Execution["input"]) {
+  const rawValue = input.url;
+  return typeof rawValue === "string" ? rawValue.trim() : "";
+}
+
+function getHostLabel(url: string) {
+  if (!url) return "";
+
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
 export function ResultsView({ executionId }: ResultsViewProps) {
   const [execution, setExecution] = useState<Execution | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -166,11 +221,13 @@ export function ResultsView({ executionId }: ResultsViewProps) {
     }).format(new Date(execution.createdAt));
   }, [execution]);
 
-  async function copyText(value: string) {
+  async function copyText(value: string, token: string) {
     await navigator.clipboard.writeText(value);
-    setCopied(true);
+    setCopiedToken(token);
     showToast("Copiado al portapapeles");
-    window.setTimeout(() => setCopied(false), 2000);
+    window.setTimeout(() => {
+      setCopiedToken((currentToken) => (currentToken === token ? null : currentToken));
+    }, 2000);
   }
 
   if (loading) {
@@ -186,6 +243,19 @@ export function ResultsView({ executionId }: ResultsViewProps) {
   }
 
   const category = categoryMeta[recipeCategoryById[execution.recipeId] || "biz"];
+  const landingReport =
+    execution.recipeId === "landing-page-analyzer" && execution.result.type === "report"
+      ? execution.result
+      : null;
+  const isLandingReport = landingReport !== null;
+  const fullAnalyzedUrl = landingReport ? getInputUrl(execution.input) : "";
+  const analyzedHost = getHostLabel(fullAnalyzedUrl) || "landing analizada";
+  const landingSections = landingReport?.sections || [];
+  const scoreLabel = landingReport ? getScoreLabel(landingReport.score) : "";
+  const scoreToneClassName = landingReport ? getScoreToneClassName(landingReport.score) : "";
+  const landingSummary = landingReport
+    ? `Analisis de landing para ${analyzedHost}. Revisamos copy, estructura y propuesta de valor para detectar los puntos que mas afectan claridad y conversion.`
+    : "";
 
   return (
     <motion.div
@@ -194,35 +264,99 @@ export function ResultsView({ executionId }: ResultsViewProps) {
       transition={{ duration: 0.35 }}
       className="space-y-8"
     >
-      {/* ── Premium Success Banner ─── */}
-      <div className="relative overflow-hidden rounded-[2rem] border border-emerald-300 bg-emerald-50/90 p-8 shadow-panel dark:border-emerald-500/30 dark:bg-emerald-500/10">
-        <div className="pointer-events-none absolute inset-0 z-0">
-          <div className="absolute -left-10 -top-10 h-32 w-32 animate-[pulse-glow_4s_infinite] rounded-full bg-emerald-500/20 blur-xl dark:bg-emerald-500/10" />
-          <div className="absolute -bottom-10 -right-10 h-40 w-40 animate-[pulse-glow_5s_infinite] rounded-full bg-emerald-400/20 blur-xl dark:bg-emerald-400/10" />
-        </div>
-
-        <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm">
-                <CheckIcon />
+      {/* ── Success Banner ─── */}
+      {isLandingReport ? (
+        <div className="relative overflow-hidden rounded-[2rem] border border-black/10 bg-white/90 p-6 shadow-panel dark:border-white/10 dark:bg-[#11161d]">
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[color:var(--accent-color)] to-transparent opacity-70"
+            style={{ "--accent-color": category.color } as CSSProperties}
+          />
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="space-y-5">
+              <div className="flex flex-wrap items-center gap-3 text-sm text-black/58 dark:text-white/58">
+                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white">
+                    <CheckIcon />
+                  </span>
+                  Automatizacion completada
+                </span>
+                <span>{formattedDate}</span>
+                <span>modo {execution.mode || "live"}</span>
               </div>
-              <p className="text-sm font-semibold tracking-wide text-emerald-800 dark:text-emerald-200">
-                Automatización completada
+
+              <div className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-black/42 dark:text-white/42">
+                  Dominio analizado
+                </p>
+                <h1 className="text-3xl font-semibold tracking-[-0.03em] text-black dark:text-white sm:text-4xl">
+                  {analyzedHost}
+                </h1>
+                <p className="max-w-3xl text-sm leading-7 text-black/68 dark:text-white/68">
+                  Vista editorial para leer rapido el diagnostico, entender el nivel actual de la landing y bajar a hallazgos accionables por criterio.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="rounded-[1.5rem] border border-black/10 bg-black/[0.02] p-5 dark:border-white/10 dark:bg-white/[0.03]">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/42 dark:text-white/42">
+                  Score actual
+                </p>
+                <div className="mt-4 flex items-end gap-2">
+                  <span className="text-5xl font-semibold tracking-[-0.04em] text-black dark:text-white">
+                    {landingReport?.score ?? 0}
+                  </span>
+                  <span className="pb-1 text-sm text-black/48 dark:text-white/48">/100</span>
+                </div>
+                <span className={`mt-4 inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${scoreToneClassName}`}>
+                  {scoreLabel}
+                </span>
+              </div>
+
+              <div className="rounded-[1.5rem] border border-black/10 bg-black/[0.02] p-5 dark:border-white/10 dark:bg-white/[0.03]">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/42 dark:text-white/42">
+                  Ejecucion
+                </p>
+                <p className="mt-4 text-lg font-semibold text-black dark:text-white">
+                  {execution.recipeTitle}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-black/62 dark:text-white/62">
+                  ID {execution.executionId.split("-").pop()}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="relative overflow-hidden rounded-[2rem] border border-emerald-300 bg-emerald-50/90 p-8 shadow-panel dark:border-emerald-500/30 dark:bg-emerald-500/10">
+          <div className="pointer-events-none absolute inset-0 z-0">
+            <div className="absolute -left-10 -top-10 h-32 w-32 animate-[pulse-glow_4s_infinite] rounded-full bg-emerald-500/20 blur-xl dark:bg-emerald-500/10" />
+            <div className="absolute -bottom-10 -right-10 h-40 w-40 animate-[pulse-glow_5s_infinite] rounded-full bg-emerald-400/20 blur-xl dark:bg-emerald-400/10" />
+          </div>
+
+          <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="mb-2 flex items-center gap-2">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm">
+                  <CheckIcon />
+                </div>
+                <p className="text-sm font-semibold tracking-wide text-emerald-800 dark:text-emerald-200">
+                  Automatización completada
+                </p>
+              </div>
+              <h1 className="mt-2 font-display text-5xl leading-none text-emerald-950 dark:text-white sm:text-6xl">
+                {execution.recipeTitle}
+              </h1>
+              <p className="mt-3 text-sm text-emerald-800/70 dark:text-emerald-100/70">
+                {formattedDate} · modo {execution.mode || "live"}
               </p>
             </div>
-            <h1 className="mt-2 font-display text-5xl leading-none text-emerald-950 dark:text-white sm:text-6xl">
-              {execution.recipeTitle}
-            </h1>
-            <p className="mt-3 text-sm text-emerald-800/70 dark:text-emerald-100/70">
-              {formattedDate} · modo {execution.mode || "live"}
-            </p>
-          </div>
-          <div className="rounded-full border border-emerald-700/20 bg-white/80 px-5 py-2.5 text-xs font-medium tracking-wide text-emerald-800 shadow-sm backdrop-blur-md dark:border-emerald-200/20 dark:bg-black/20 dark:text-emerald-100">
-            ID: {execution.executionId.split('-').pop()}
+            <div className="rounded-full border border-emerald-700/20 bg-white/80 px-5 py-2.5 text-xs font-medium tracking-wide text-emerald-800 shadow-sm backdrop-blur-md dark:border-emerald-200/20 dark:bg-black/20 dark:text-emerald-100">
+              ID: {execution.executionId.split("-").pop()}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* ── Social Posts Pattern ─── */}
       {execution.result.type === "social-posts" ? (
@@ -327,55 +461,183 @@ export function ResultsView({ executionId }: ResultsViewProps) {
 
       {/* ── Report Pattern ─── */}
       {execution.result.type === "report" ? (
-        <section className="grid gap-6 xl:grid-cols-[0.7fr_1fr]">
-          <div className="glass-panel-strong flex flex-col items-center justify-center text-center rounded-[2rem] p-8 shadow-panel">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/45 dark:text-white/45 mb-6">Score general</p>
-            <ScoreRing score={execution.result.score} color={category.color} />
-            <h2 className="mt-8 text-xl font-semibold">{execution.result.headline}</h2>
+        isLandingReport ? (
+          <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="space-y-5">
+              <div className="rounded-[2rem] border border-black/10 bg-white/92 p-8 shadow-panel dark:border-white/10 dark:bg-[#11161d]">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/42 dark:text-white/42">
+                  Resumen ejecutivo
+                </p>
+                <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-black dark:text-white">
+                  Analisis de landing para {analyzedHost}
+                </h2>
+                <p className="mt-4 max-w-3xl text-[15px] leading-8 text-black/74 dark:text-white/74">
+                  {landingSummary}
+                </p>
 
-            {execution.result.recommendations?.length ? (
-              <div className="mt-8 w-full text-left">
-                <p className="text-xs uppercase tracking-wider text-black/50 dark:text-white/50 mb-4 font-semibold">Prioridades</p>
-                <ul className="space-y-3">
-                  {execution.result.recommendations.map((recommendation, i) => (
-                    <motion.li
-                      key={recommendation}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5 + i * 0.1 }}
-                      className="flex gap-3 text-sm leading-6 text-black/70 dark:text-white/70 bg-black/5 dark:bg-white/5 p-3 rounded-xl"
-                    >
-                      <span className={`text-[color:var(--accent-color)]`} style={{ "--accent-color": category.color } as CSSProperties}>✦</span>
-                      <span>{recommendation}</span>
-                    </motion.li>
-                  ))}
-                </ul>
+                {fullAnalyzedUrl ? (
+                  <div className="mt-6 rounded-[1.5rem] border border-black/10 bg-black/[0.02] p-4 dark:border-white/10 dark:bg-white/[0.03]">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/42 dark:text-white/42">
+                          URL analizada
+                        </p>
+                        <p className="mt-2 break-all text-sm leading-7 text-black/68 dark:text-white/68">
+                          {fullAnalyzedUrl}
+                        </p>
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.97 }}
+                        type="button"
+                        onClick={() => void copyText(fullAnalyzedUrl, "landing-url")}
+                        className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-colors ${
+                          copiedToken === "landing-url"
+                            ? "bg-emerald-500 text-white"
+                            : "border border-black/10 bg-white text-black hover:bg-black/[0.03] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                        }`}
+                      >
+                        {copiedToken === "landing-url" ? <CheckIcon /> : <ClipboardIcon />}
+                        {copiedToken === "landing-url" ? "URL copiada" : "Copiar URL"}
+                      </motion.button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
-            ) : null}
-          </div>
 
-          <div className="space-y-5">
-            {execution.result.sections.map((section, idx) => (
-              <motion.div
-                key={section.title}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * idx }}
-                className="glass-panel group rounded-[2rem] p-7 shadow-sm transition-all hover:shadow-panel"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <h2 className="text-lg font-semibold group-hover:text-[color:var(--accent-color)] transition-colors" style={{ "--accent-color": category.color } as CSSProperties}>{section.title}</h2>
-                  {section.score !== undefined ? (
-                    <span className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shadow-sm ${category.softClassName}`}>
-                      {section.score}
-                    </span>
-                  ) : null}
+              <div className="space-y-4">
+                {landingSections.map((section, idx) => (
+                  <motion.article
+                    key={section.title}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.08 * idx }}
+                    className="rounded-[1.75rem] border border-black/10 bg-white/92 p-7 shadow-sm dark:border-white/10 dark:bg-[#11161d]"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <h3 className="text-xl font-semibold tracking-[-0.02em] text-black dark:text-white">
+                        {section.title}
+                      </h3>
+                      {section.score !== undefined ? (
+                        <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${getScoreToneClassName(section.score)}`}>
+                          {section.score}/100
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="mt-5 max-w-3xl text-[15px] leading-8 text-black/74 dark:text-white/74">
+                      {section.content}
+                    </p>
+                  </motion.article>
+                ))}
+              </div>
+            </div>
+
+            <aside className="space-y-5">
+              <div className="rounded-[1.75rem] border border-black/10 bg-white/92 p-6 shadow-sm dark:border-white/10 dark:bg-[#11161d]">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/42 dark:text-white/42">
+                  Lectura rapida
+                </p>
+                <div className="mt-4 flex items-center gap-4">
+                  <div
+                    className="flex h-16 w-16 items-center justify-center rounded-2xl text-2xl font-semibold text-white shadow-sm"
+                    style={{ backgroundColor: category.color }}
+                  >
+                    {landingReport?.score ?? 0}
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold text-black dark:text-white">{scoreLabel}</p>
+                    <p className="mt-1 text-sm leading-6 text-black/64 dark:text-white/64">
+                      {getScoreSummary(landingReport?.score ?? 0)}
+                    </p>
+                  </div>
                 </div>
-                <p className="mt-4 text-sm leading-relaxed text-black/70 dark:text-white/70">{section.content}</p>
-              </motion.div>
-            ))}
-          </div>
-        </section>
+              </div>
+
+              <div className="rounded-[1.75rem] border border-black/10 bg-white/92 p-6 shadow-sm dark:border-white/10 dark:bg-[#11161d]">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-black/42 dark:text-white/42">
+                  Acciones prioritarias
+                </h2>
+                {landingReport?.recommendations?.length ? (
+                  <ol className="mt-5 space-y-3">
+                    {landingReport.recommendations.map((recommendation, index) => (
+                      <motion.li
+                        key={recommendation}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.12 * index }}
+                        className="flex gap-4 rounded-[1.25rem] border border-black/10 bg-black/[0.02] p-4 dark:border-white/10 dark:bg-white/[0.03]"
+                      >
+                        <span
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+                          style={{ backgroundColor: category.color }}
+                        >
+                          {index + 1}
+                        </span>
+                        <span className="text-sm leading-7 text-black/72 dark:text-white/72">
+                          {recommendation}
+                        </span>
+                      </motion.li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="mt-4 text-sm leading-7 text-black/64 dark:text-white/64">
+                    No llegaron recomendaciones adicionales en esta ejecucion.
+                  </p>
+                )}
+              </div>
+            </aside>
+          </section>
+        ) : (
+          <section className="grid gap-6 xl:grid-cols-[0.7fr_1fr]">
+            <div className="glass-panel-strong flex flex-col items-center justify-center rounded-[2rem] p-8 text-center shadow-panel">
+              <p className="mb-6 text-xs font-semibold uppercase tracking-[0.2em] text-black/45 dark:text-white/45">Score general</p>
+              <ScoreRing score={execution.result.score} color={category.color} />
+              <h2 className="mt-8 text-xl font-semibold">{execution.result.headline}</h2>
+
+              {execution.result.recommendations?.length ? (
+                <div className="mt-8 w-full text-left">
+                  <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-black/50 dark:text-white/50">Prioridades</p>
+                  <ul className="space-y-3">
+                    {execution.result.recommendations.map((recommendation, i) => (
+                      <motion.li
+                        key={recommendation}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5 + i * 0.1 }}
+                        className="flex gap-3 rounded-xl bg-black/5 p-3 text-sm leading-6 text-black/70 dark:bg-white/5 dark:text-white/70"
+                      >
+                        <span className="text-[color:var(--accent-color)]" style={{ "--accent-color": category.color } as CSSProperties}>✦</span>
+                        <span>{recommendation}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="space-y-5">
+              {execution.result.sections.map((section, idx) => (
+                <motion.div
+                  key={section.title}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * idx }}
+                  className="glass-panel group rounded-[2rem] p-7 shadow-sm transition-all hover:shadow-panel"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <h2 className="text-lg font-semibold transition-colors group-hover:text-[color:var(--accent-color)]" style={{ "--accent-color": category.color } as CSSProperties}>{section.title}</h2>
+                    {section.score !== undefined ? (
+                      <span className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shadow-sm ${category.softClassName}`}>
+                        {section.score}
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="mt-4 text-sm leading-relaxed text-black/70 dark:text-white/70">{section.content}</p>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        )
       ) : null}
 
       {/* ── Text Pattern ─── */}
@@ -392,11 +654,11 @@ export function ResultsView({ executionId }: ResultsViewProps) {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.95 }}
                     type="button"
-                    onClick={() => void copyText(textResult.content)}
-                    className={`inline-flex items-center justify-center gap-2.5 rounded-full px-5 py-2.5 text-sm font-semibold shadow-sm transition-colors ${copied ? 'bg-emerald-500 text-white' : category.buttonClassName}`}
+                    onClick={() => void copyText(textResult.content, "text-result")}
+                    className={`inline-flex items-center justify-center gap-2.5 rounded-full px-5 py-2.5 text-sm font-semibold shadow-sm transition-colors ${copiedToken === "text-result" ? 'bg-emerald-500 text-white' : category.buttonClassName}`}
                   >
-                    {copied ? <CheckIcon /> : <ClipboardIcon />}
-                    {copied ? "Copiado al portapapeles" : "Copiar texto"}
+                    {copiedToken === "text-result" ? <CheckIcon /> : <ClipboardIcon />}
+                    {copiedToken === "text-result" ? "Copiado al portapapeles" : "Copiar texto"}
                   </motion.button>
                 </div>
                 <div className="mt-8 rounded-2xl bg-white/50 p-6 shadow-inner dark:bg-black/20">
