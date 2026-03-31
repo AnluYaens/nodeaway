@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="./frontend/public/icon.svg" alt="Nodeaway Logo" width="96" />
   <h1>Nodeaway</h1>
   <p><strong>Automatizaciones listas para usar con una interfaz cuidada, un backend ligero y n8n como motor real de ejecución.</strong></p>
 </div>
@@ -106,6 +105,27 @@ Workflows probados:
 - Demo en vivo: [https://nodeawayhack.duckdns.org](https://nodeawayhack.duckdns.org)
 - Repositorio: [https://github.com/AnluYaens/nodeaway](https://github.com/AnluYaens/nodeaway)
 
+## Infraestructura en CubePath
+
+Para la demo y la entrega de hackathon, Nodeaway se apoya en infraestructura desplegada sobre CubePath.
+
+### Cómo se usa CubePath en este proyecto
+
+- `n8n` corre como servicio dedicado dentro de la infraestructura de CubePath.
+  Esto permite exponer los webhooks reales de automatización y mantener la lógica operativa fuera del frontend.
+- El frontend y el backend se publican como servicios separados.
+  La app de usuario consume la API de FastAPI, y FastAPI se comunica con n8n mediante webhook HTTP.
+- La base operativa queda centralizada en el mismo entorno.
+  Esto reduce fricción al probar integraciones, simplifica la demo y evita depender de servicios repartidos en distintos hosts durante la presentación.
+
+### Qué aporta CubePath a Nodeaway
+
+- despliegue rápido para iterar durante la hackathon
+- hosting estable para exponer la demo pública
+- una base clara para operar n8n, backend y frontend como piezas de un mismo producto
+
+En esta arquitectura, CubePath no es solo hosting: es la capa que permite que la experiencia de Nodeaway se vea como un producto terminado y no como un conjunto de herramientas conectadas de forma manual.
+
 ## Cómo levantar el proyecto
 
 ### Requisitos
@@ -180,8 +200,6 @@ docker-compose.yml        Orquestación local de frontend + backend
 
 ## Capturas
 
-Puedes usar la identidad visual ya incluida en el proyecto:
-
 ![Nodeaway](./frontend/public/og-image.svg)
 
 ## Limitaciones conocidas
@@ -190,10 +208,14 @@ Puedes usar la identidad visual ya incluida en el proyecto:
 - `docker-compose.yml` no levanta n8n dentro del mismo stack, por lo que la instancia de n8n debe existir previamente.
 - El proyecto está preparado para demo y hackathon; aún admite más hardening para un entorno de producción estricto.
 
-## Equipo
+## Autores y Derechos
+
+Este proyecto fue ideado, diseñado y desarrollado para esta hackathon por el equipo fundador:
 
 - Angel Jaen
 - Sebastián Armas
+
+El código fuente de este repositorio se hace público con fines evaluativos para la hackathon. Aun así, la marca `Nodeaway`, su propuesta de valor, diseño de producto y los derechos de propiedad intelectual subyacentes permanecen reservados por sus autores.
 
 ---
 
