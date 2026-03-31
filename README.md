@@ -200,7 +200,25 @@ docker-compose.yml        Orquestación local de frontend + backend
 
 ## Capturas
 
-![Nodeaway](./frontend/public/og-image.svg)
+### Catálogo de automatizaciones
+
+![Catálogo de Nodeaway](./docs/images/catalogo.png)
+
+### Historial de ejecuciones
+
+![Historial de ejecuciones](./docs/images/historial.png)
+
+### Formulario de sugerencias
+
+![Formulario de sugerencias](./docs/images/sugerencias.png)
+
+### Product Social Post Generator
+
+![Resultado de Product Social Post Generator](./docs/images/social-post-result.png)
+
+### Boletín de Noticias RSS
+
+![Resultado de Boletín de Noticias RSS](./docs/images/rss-result.png)
 
 ## Limitaciones conocidas
 
