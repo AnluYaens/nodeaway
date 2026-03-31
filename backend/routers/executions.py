@@ -331,6 +331,7 @@ def _normalize_n8n_social_posts(result: dict[str, Any], payload: dict[str, Any])
                     "hashtags": [str(hashtag).strip() for hashtag in hashtags if str(hashtag).strip()] if isinstance(hashtags, list) else [],
                     "imagePrompt": str(entry.get("imagePrompt", "")).strip(),
                     "imageBase64": entry.get("imageBase64"),
+                    "imageUrl": str(entry.get("imageUrl", "")).strip() or None,
                 }
             )
 
@@ -424,7 +425,14 @@ def _normalize_n8n_rss_digest(result: dict[str, Any]) -> dict[str, Any]:
     return {
         "type": "text",
         "content": str(result.get("content", result.get("digest", ""))).strip() or "Boletín generado por n8n.",
-        "context": {"sources": result.get("sources", []), "articlesFound": result.get("articlesFound")},
+        "context": {
+            "topic": result.get("topic"),
+            "articlesFound": result.get("articlesFound"),
+            "sources": result.get("sources", []),
+            "highlights": result.get("highlights", []),
+            "themes": result.get("themes", []),
+            "summary": result.get("summary"),
+        },
     }
 
 
@@ -524,7 +532,8 @@ async def _resolve_result(recipe: dict[str, Any], payload: dict[str, Any]) -> tu
     except Exception as error:
         if isinstance(error, HTTPException):
             raise
-        raise HTTPException(status_code=400, detail=f"Error en la ejecución de n8n: {error}")
+        message = str(error).strip() or "La automatización falló en n8n."
+        raise HTTPException(status_code=400, detail=message)
 
 
 def _is_sensitive_input_key(key: str) -> bool:

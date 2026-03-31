@@ -6,7 +6,8 @@
   "icon": "reddit",
   "estimatedTime": "12s",
   "integrations": ["Reddit"],
-  "popular": true,
+  "popular": false,
+  "beta": true,
   "n8nWebhookPath": "/webhook/reddit-opinion-radar",
   "fields": [
     {

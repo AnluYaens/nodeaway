@@ -75,7 +75,33 @@ async def trigger_workflow(webhook_path: str, payload: dict[str, Any]) -> dict[s
 
     async with httpx.AsyncClient(timeout=N8N_TIMEOUT_SECONDS, follow_redirects=True) as client:
         response = await client.post(webhook_url, json=payload)
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except httpx.HTTPStatusError as error:
+            response_message = ""
+            try:
+                error_payload = response.json()
+                if isinstance(error_payload, dict):
+                    response_message = str(
+                        error_payload.get("message")
+                        or error_payload.get("error")
+                        or error_payload.get("detail")
+                        or ""
+                    ).strip()
+            except ValueError:
+                response_message = ""
+
+            if not response_message:
+                response_message = response.text.strip()
+
+            if response_message:
+                raise RuntimeError(
+                    f"n8n devolvió {response.status_code}: {response_message}"
+                ) from error
+
+            raise RuntimeError(
+                f"n8n devolvió {response.status_code} al ejecutar el workflow."
+            ) from error
 
     try:
         data = response.json()
