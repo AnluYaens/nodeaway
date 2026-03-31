@@ -5,7 +5,7 @@
   "category": "biz",
   "icon": "sparkles",
   "estimatedTime": "8s",
-  "integrations": ["AI", "Gemini Image"],
+  "integrations": ["AI", "Pollinations"],
   "popular": true,
   "n8nWebhookPath": "/webhook/social-post-generator",
   "fields": [

@@ -1,11 +1,11 @@
 {
   "id": "github-issue-summarizer",
   "title": "Resumidor de Issues de GitHub",
-  "description": "Descarga los últimos issues de un repositorio y los categoriza por urgencia con AI.",
+  "description": "Descarga los últimos issues de un repositorio y los categoriza por urgencia.",
   "category": "dev",
   "icon": "github",
   "estimatedTime": "12s",
-  "integrations": ["GitHub", "AI"],
+  "integrations": ["GitHub"],
   "popular": true,
   "n8nWebhookPath": "/webhook/github-issue-summarizer",
   "fields": [

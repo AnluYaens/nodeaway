@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import ipaddress
 import re
 from datetime import UTC, datetime, timedelta
 from email.utils import parsedate_to_datetime
@@ -26,10 +27,49 @@ REDDIT_HEADERS = {
     "User-Agent": DEFAULT_USER_AGENT,
 }
 
+BLOCKED_HOSTNAMES = {
+    "localhost",
+    "localhost.localdomain",
+    "metadata",
+    "metadata.google.internal",
+}
+BLOCKED_HOST_SUFFIXES = (
+    ".internal",
+    ".local",
+    ".localhost",
+    ".home",
+    ".lan",
+)
+
 
 def _is_valid_url(value: str) -> bool:
     parsed = urlparse(value)
-    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return False
+
+    hostname = (parsed.hostname or "").strip().lower().rstrip(".")
+    if not hostname:
+        return False
+    if parsed.username or parsed.password:
+        return False
+    if hostname in BLOCKED_HOSTNAMES or hostname.endswith(BLOCKED_HOST_SUFFIXES):
+        return False
+    if "." not in hostname and hostname not in {"github.com"}:
+        return False
+
+    try:
+        ip = ipaddress.ip_address(hostname)
+    except ValueError:
+        return not hostname.startswith("-") and ".." not in hostname
+
+    return not (
+        ip.is_private
+        or ip.is_loopback
+        or ip.is_link_local
+        or ip.is_multicast
+        or ip.is_reserved
+        or ip.is_unspecified
+    )
 
 
 def _coerce_field_value(field: dict[str, Any], value: Any) -> Any:

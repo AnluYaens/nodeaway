@@ -5,7 +5,7 @@
   "category": "life",
   "icon": "rss",
   "estimatedTime": "7s",
-  "integrations": ["RSS", "AI"],
+  "integrations": ["RSS"],
   "popular": true,
   "n8nWebhookPath": "/webhook/rss-news-digest",
   "fields": [

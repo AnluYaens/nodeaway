@@ -5,7 +5,7 @@
   "category": "dev",
   "icon": "github",
   "estimatedTime": "10s",
-  "integrations": ["GitHub", "AI"],
+  "integrations": ["GitHub"],
   "popular": false,
   "n8nWebhookPath": "/webhook/github-health-auditor",
   "fields": [

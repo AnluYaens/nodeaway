@@ -5,7 +5,7 @@
   "category": "biz",
   "icon": "reddit",
   "estimatedTime": "12s",
-  "integrations": ["Reddit", "AI"],
+  "integrations": ["Reddit"],
   "popular": true,
   "n8nWebhookPath": "/webhook/reddit-opinion-radar",
   "fields": [
