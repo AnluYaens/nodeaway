@@ -62,6 +62,9 @@ type DynamicFormProps = {
   recipeId: string;
 };
 
+const MIN_SUBMIT_VISUAL_MS = 2600;
+const PROGRESS_STEP_INTERVAL_MS = 850;
+
 export function DynamicForm({ recipeId }: DynamicFormProps) {
   const router = useRouter();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
@@ -119,7 +122,7 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
 
     const interval = window.setInterval(() => {
       setProgressStep((current) => Math.min(current + 1, loadingMessages.length - 1));
-    }, 1800);
+    }, PROGRESS_STEP_INTERVAL_MS);
 
     return () => {
       window.clearInterval(interval);
@@ -202,7 +205,7 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
           ? [
             ["Score salud", "82/100"],
             ["Issues abiertos", "14"],
-            ["Commits recientes", "9"]
+            ["Contribuidores", "326"]
           ]
           : [
             ["Issues abiertos", "30"],
@@ -333,6 +336,212 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
     );
   }
 
+  function renderSubmittingPreview() {
+    if (!recipe) return null;
+
+    if (recipe.resultTemplate.type === "dashboard") {
+      const statLabels =
+        recipe.id === "github-health-auditor"
+          ? ["Score salud", "Issues abiertos", "Contribuidores"]
+          : ["Issues abiertos", "Urgencia alta", "Sin etiquetar"];
+      const listItems =
+        recipe.id === "github-health-auditor"
+          ? ["Leyendo métricas del repo", "Cruzando backlog y actividad", "Armando recomendaciones"]
+          : ["Clasificando señales", "Ordenando prioridades", "Preparando salida final"];
+
+      return (
+        <div className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
+            {statLabels.map((label, index) => {
+              const isVisible = progressStep >= index;
+              return (
+                <motion.div
+                  key={label}
+                  initial={{ opacity: 0.35, y: 10, scale: 0.98 }}
+                  animate={{
+                    opacity: isVisible ? 1 : 0.45,
+                    y: isVisible ? 0 : 10,
+                    scale: isVisible ? 1 : 0.985
+                  }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5"
+                >
+                  <p className="text-[0.65rem] uppercase tracking-[0.22em] text-black/40 dark:text-white/40">
+                    {label}
+                  </p>
+                  <motion.div
+                    className="mt-4 h-9 rounded-full bg-black/8 dark:bg-white/10"
+                    initial={{ width: "34%" }}
+                    animate={{ width: isVisible ? `${78 - index * 12}%` : `${34 + index * 8}%` }}
+                    transition={{ duration: 0.55, ease: "easeOut" }}
+                  />
+                  <motion.div
+                    className="mt-4 h-2 rounded-full bg-black/6 dark:bg-white/8"
+                    initial={{ width: "44%" }}
+                    animate={{ width: isVisible ? "58%" : "36%" }}
+                    transition={{ duration: 0.45, delay: 0.05 * index }}
+                  />
+                </motion.div>
+              );
+            })}
+          </div>
+
+          <div className="rounded-[1.5rem] border border-dashed border-black/15 p-4 dark:border-white/15">
+            <p className="text-sm font-medium">Construyendo vista final</p>
+            <div className="mt-3 space-y-2">
+              {listItems.map((item, index) => {
+                const isVisible = progressStep >= index;
+                return (
+                  <motion.div
+                    key={item}
+                    initial={{ opacity: 0.3, x: -8 }}
+                    animate={{ opacity: isVisible ? 1 : 0.42, x: isVisible ? 0 : -8 }}
+                    transition={{ duration: 0.35, delay: index * 0.05 }}
+                    className="flex items-center justify-between gap-3 rounded-2xl bg-black/[0.03] px-3 py-3 dark:bg-white/[0.04]"
+                  >
+                    <span className="text-sm text-black/68 dark:text-white/68">{item}</span>
+                    <motion.div
+                      className="h-2 rounded-full bg-[color:var(--accent-color)]/50"
+                      initial={{ width: 26 }}
+                      animate={{ width: isVisible ? 70 : 34 }}
+                      transition={{ duration: 0.45 }}
+                    />
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (recipe.resultTemplate.type === "report") {
+      const sectionLabels =
+        recipe.id === "reddit-opinion-radar"
+          ? ["Pros recurrentes", "Contras recurrentes", "Sentimiento general"]
+          : ["Copy", "Estructura y CTA", "Propuesta de valor"];
+
+      return (
+        <div className="space-y-4">
+          <motion.div
+            initial={{ opacity: 0.4, scale: 0.985 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+            className="rounded-[1.5rem] border border-black/10 bg-white/70 p-5 dark:border-white/10 dark:bg-white/5"
+          >
+            <p className="text-[0.65rem] uppercase tracking-[0.22em] text-black/40 dark:text-white/40">
+              Score estimado
+            </p>
+            <motion.div
+              className="mt-4 h-14 rounded-[1rem] bg-black/8 dark:bg-white/10"
+              initial={{ width: "28%" }}
+              animate={{ width: progressStep >= 1 ? "48%" : "28%" }}
+              transition={{ duration: 0.55, ease: "easeOut" }}
+            />
+            <motion.div
+              className="mt-4 h-2 rounded-full bg-black/6 dark:bg-white/8"
+              initial={{ width: "42%" }}
+              animate={{ width: progressStep >= 2 ? "86%" : "42%" }}
+              transition={{ duration: 0.55, ease: "easeOut" }}
+            />
+          </motion.div>
+
+          <div className="space-y-2">
+            {sectionLabels.map((item, index) => {
+              const isVisible = progressStep >= Math.min(index, 2);
+              return (
+                <motion.div
+                  key={item}
+                  initial={{ opacity: 0.32, x: -10 }}
+                  animate={{ opacity: isVisible ? 1 : 0.45, x: isVisible ? 0 : -10 }}
+                  transition={{ duration: 0.35, delay: index * 0.04 }}
+                  className="rounded-2xl border border-black/10 px-4 py-3 dark:border-white/10"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm text-black/68 dark:text-white/68">{item}</span>
+                    <motion.div
+                      className="h-2 rounded-full bg-[color:var(--accent-color)]/45"
+                      initial={{ width: 24 }}
+                      animate={{ width: isVisible ? 56 : 24 }}
+                      transition={{ duration: 0.45 }}
+                    />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    if (recipe.resultTemplate.type === "social-posts") {
+      return (
+        <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
+          {["Instagram", "Twitter/X", "LinkedIn"].map((label, index) => {
+            const isVisible = progressStep >= index;
+            return (
+              <motion.div
+                key={label}
+                initial={{ opacity: 0.34, y: 12 }}
+                animate={{ opacity: isVisible ? 1 : 0.45, y: isVisible ? 0 : 12 }}
+                transition={{ duration: 0.35, delay: index * 0.05 }}
+                className="overflow-hidden rounded-[1.5rem] border border-black/10 bg-white/70 dark:border-white/10 dark:bg-white/5"
+              >
+                <motion.div
+                  className="h-24"
+                  initial={{ opacity: 0.5 }}
+                  animate={{ opacity: isVisible ? 1 : 0.5 }}
+                  style={{
+                    background: `linear-gradient(135deg, ${category.color}30, rgba(255,255,255,0.88))`
+                  }}
+                />
+                <div className="space-y-2 p-4">
+                  <p className="text-sm font-medium">{label}</p>
+                  <motion.div
+                    className="h-2 rounded-full bg-black/8 dark:bg-white/10"
+                    initial={{ width: "44%" }}
+                    animate={{ width: isVisible ? "88%" : "44%" }}
+                    transition={{ duration: 0.5 }}
+                  />
+                  <motion.div
+                    className="h-2 rounded-full bg-black/8 dark:bg-white/10"
+                    initial={{ width: "30%" }}
+                    animate={{ width: isVisible ? "70%" : "30%" }}
+                    transition={{ duration: 0.45, delay: 0.04 }}
+                  />
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <div className="rounded-[1.5rem] border border-black/10 bg-white/70 p-5 dark:border-white/10 dark:bg-white/5">
+          <p className="text-sm font-medium">
+            {recipe.id === "rss-news-digest" ? "Montando briefing" : "Preparando texto final"}
+          </p>
+          <div className="mt-4 space-y-2">
+            {["100%", "88%", "72%", "80%"].map((width, index) => {
+              const isVisible = progressStep >= Math.min(index, 2);
+              return (
+                <motion.div
+                  key={`${width}-${index + 1}`}
+                  className="h-2 rounded-full bg-black/8 dark:bg-white/10"
+                  initial={{ width: "26%", opacity: 0.45 }}
+                  animate={{ width: isVisible ? width : "26%", opacity: isVisible ? 1 : 0.45 }}
+                  transition={{ duration: 0.5, delay: index * 0.04 }}
+                />
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   function updateValue(fieldId: string, value: string) {
     setValues((current) => ({
       ...current,
@@ -353,6 +562,7 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
     try {
       setSubmitting(true);
       setError(null);
+      const startedAt = performance.now();
       const payload = recipe.fields.reduce<Record<string, string | number>>((accumulator, field) => {
         const value = values[field.id];
         if (!value) return accumulator;
@@ -362,6 +572,11 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
       }, {});
 
       const response = await runAutomation(recipe.id, payload);
+      const elapsed = performance.now() - startedAt;
+      const remainingDelay = Math.max(0, MIN_SUBMIT_VISUAL_MS - elapsed);
+      if (remainingDelay > 0) {
+        await new Promise((resolve) => window.setTimeout(resolve, remainingDelay));
+      }
       router.push(`/results/${response.executionId}`);
     } catch (submitError) {
       setError(
@@ -595,23 +810,7 @@ export function DynamicForm({ recipeId }: DynamicFormProps) {
                 })}
               </div>
 
-              <div className="grid gap-3">
-                {Array.from({ length: 2 }).map((_, index) => (
-                  <motion.div
-                    key={`skeleton-panel-${index + 1}`}
-                    initial={{ opacity: 0.3 }}
-                    animate={{ opacity: 1 }}
-                    transition={{
-                      duration: 1.2,
-                      repeat: Infinity,
-                      repeatType: "mirror",
-                      ease: "easeInOut",
-                      delay: index * 0.2,
-                    }}
-                    className="h-24 rounded-2xl border border-black/10 bg-white/70 dark:border-white/10 dark:bg-white/5"
-                  />
-                ))}
-              </div>
+              {renderSubmittingPreview()}
             </div>
           ) : (
             <div className="space-y-5">

@@ -1,5 +1,5 @@
 export type RecipeCategory = "dev" | "life" | "biz";
-export type FieldType = "text" | "email" | "number" | "textarea" | "select" | "url";
+export type FieldType = "text" | "email" | "number" | "textarea" | "select" | "url" | "password";
 export type ResultType = "dashboard" | "social-posts" | "report" | "text";
 
 export type Field = {
@@ -23,7 +23,6 @@ export type Recipe = {
   estimatedTime: string;
   integrations: string[];
   popular: boolean;
-  n8nWebhookPath: string;
   fields: Field[];
   resultTemplate: {
     type: ResultType;
